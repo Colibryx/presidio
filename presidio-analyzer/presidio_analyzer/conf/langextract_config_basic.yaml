@@ -51,7 +51,7 @@ langextract:
 
   # ollama example
   model:
-    model_id: "qwen2.5:1.5b"
+    model_id: "gemma3:1b"
     provider:
       name: "ollama"
       kwargs:
