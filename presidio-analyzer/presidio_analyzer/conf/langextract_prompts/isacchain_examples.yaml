@@ -1,0 +1,338 @@
+# LangExtract Examples for ISAC Chain
+# Covers PII, PHI and Cybersecurity / CTI entities
+# Entity names match the Presidio mappings in langextract_config_basic.yaml
+
+examples:
+
+  # ── PII / PHI ────────────────────────────────────────────────────────────────
+
+  # 1) Person + Email + Phone
+  - text: "Il referente è Mario Rossi, raggiungibile a mario.rossi@example.it o al +39 02 1234 5678."
+    extractions:
+      - extraction_class: "PERSON"
+        extraction_text: "Mario Rossi"
+        attributes:
+          type: "full_name"
+      - extraction_class: "EMAIL_ADDRESS"
+        extraction_text: "mario.rossi@example.it"
+        attributes:
+          type: "email_address"
+      - extraction_class: "PHONE_NUMBER"
+        extraction_text: "+39 02 1234 5678"
+        attributes:
+          type: "phone_number"
+          region: "IT"
+
+  # 2) Person + Organization + Location
+  - text: "Dr. Anna Bianchi works at Ospedale San Raffaele in Milan."
+    extractions:
+      - extraction_class: "PERSON"
+        extraction_text: "Dr. Anna Bianchi"
+        attributes:
+          type: "healthcare_provider"
+      - extraction_class: "ORGANIZATION"
+        extraction_text: "Ospedale San Raffaele"
+        attributes:
+          type: "hospital"
+      - extraction_class: "LOCATION"
+        extraction_text: "Milan"
+        attributes:
+          type: "city"
+
+  # 3) SSN + Date of Birth
+  - text: "SSN: 123-45-6789; Data di nascita: 15/03/1985."
+    extractions:
+      - extraction_class: "US_SSN"
+        extraction_text: "123-45-6789"
+        attributes:
+          type: "us_ssn"
+      - extraction_class: "DATE_TIME"
+        extraction_text: "15/03/1985"
+        attributes:
+          type: "date_of_birth"
+          format: "DD/MM/YYYY"
+
+  # 4) Credit card + URL
+  - text: "Payment processed with card 4532-1234-1234-1234 on https://shop.example.com/checkout."
+    extractions:
+      - extraction_class: "CREDIT_CARD"
+        extraction_text: "4532-1234-1234-1234"
+        attributes:
+          type: "credit_card_number"
+      - extraction_class: "URL"
+        extraction_text: "https://shop.example.com/checkout"
+        attributes:
+          type: "website_url"
+
+  # 5) IPv4 + IPv6 (generic)
+  - text: "Server reachable at 10.0.0.5 and fe80::1ff:fe23:4567:890a."
+    extractions:
+      - extraction_class: "IP_ADDRESS"
+        extraction_text: "10.0.0.5"
+        attributes:
+          type: "ipv4"
+      - extraction_class: "IP_ADDRESS"
+        extraction_text: "fe80::1ff:fe23:4567:890a"
+        attributes:
+          type: "ipv6"
+
+  # ── CYBERSECURITY / CTI ──────────────────────────────────────────────────────
+
+  # 6) Incident ID + Malware + Internal server
+  - text: "Incidente INC-2024-0042: rilevato Emotet sul server srv-dc01 alle 03:14 UTC del 2024-11-20."
+    extractions:
+      - extraction_class: "ID_INCIDENTE"
+        extraction_text: "INC-2024-0042"
+        attributes:
+          type: "incident_id"
+      - extraction_class: "MALWARE"
+        extraction_text: "Emotet"
+        attributes:
+          type: "malware_name"
+      - extraction_class: "SERVER_INTERNO"
+        extraction_text: "srv-dc01"
+        attributes:
+          type: "internal_server"
+      - extraction_class: "DATE_TIME"
+        extraction_text: "2024-11-20"
+        attributes:
+          type: "event_date"
+          format: "YYYY-MM-DD"
+
+  # 7) Ransomware + Threat actor + CVE
+  - text: "The LockBit group, attributed to TA505, exploited CVE-2023-44487 to deploy ransomware."
+    extractions:
+      - extraction_class: "RANSOMWARE"
+        extraction_text: "LockBit"
+        attributes:
+          type: "ransomware_name"
+      - extraction_class: "ATTORE_MINACCIA"
+        extraction_text: "TA505"
+        attributes:
+          type: "threat_actor"
+      - extraction_class: "VULNERABILITA"
+        extraction_text: "CVE-2023-44487"
+        attributes:
+          type: "cve"
+
+  # 8) APT group + CVE + Malware
+  - text: "APT28 leveraged EternalBlue (CVE-2017-0144) to spread Cobalt Strike across the network."
+    extractions:
+      - extraction_class: "GRUPPO_APT"
+        extraction_text: "APT28"
+        attributes:
+          type: "apt_group"
+      - extraction_class: "VULNERABILITA"
+        extraction_text: "EternalBlue"
+        attributes:
+          type: "vulnerability_name"
+      - extraction_class: "VULNERABILITA"
+        extraction_text: "CVE-2017-0144"
+        attributes:
+          type: "cve"
+      - extraction_class: "MALWARE"
+        extraction_text: "Cobalt Strike"
+        attributes:
+          type: "malware_name"
+
+  # 9) File hashes (MD5 + SHA-256)
+  - text: "Suspicious file detected: MD5 d41d8cd98f00b204e9800998ecf8427e, SHA-256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855."
+    extractions:
+      - extraction_class: "HASH_FILE"
+        extraction_text: "d41d8cd98f00b204e9800998ecf8427e"
+        attributes:
+          type: "md5"
+      - extraction_class: "HASH_FILE"
+        extraction_text: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        attributes:
+          type: "sha256"
+
+  # 10) Source IP + Destination IP + Port + Protocol
+  - text: "Traffic detected from 185.220.101.45 to 192.168.10.20 on port 3389 via RDP."
+    extractions:
+      - extraction_class: "IP_SORGENTE"
+        extraction_text: "185.220.101.45"
+        attributes:
+          type: "ipv4"
+          role: "attacker"
+      - extraction_class: "IP_DESTINAZIONE"
+        extraction_text: "192.168.10.20"
+        attributes:
+          type: "ipv4"
+          role: "victim"
+      - extraction_class: "NUMERO_PORTA"
+        extraction_text: "3389"
+        attributes:
+          type: "port_number"
+      - extraction_class: "PROTOCOLLO"
+        extraction_text: "RDP"
+        attributes:
+          type: "network_protocol"
+
+  # 11) Username + Password
+  - text: "Credential dump recovered: username admin, password P@ssw0rd!2024."
+    extractions:
+      - extraction_class: "NOME_UTENTE"
+        extraction_text: "admin"
+        attributes:
+          type: "username"
+      - extraction_class: "PASSWORD"
+        extraction_text: "P@ssw0rd!2024"
+        attributes:
+          type: "plaintext_password"
+
+  # 12) Process name + Command (lateral movement)
+  - text: "L'attaccante ha eseguito powershell.exe con il comando: Invoke-Mimikatz -DumpCreds."
+    extractions:
+      - extraction_class: "NOME_PROCESSO"
+        extraction_text: "powershell.exe"
+        attributes:
+          type: "process_name"
+      - extraction_class: "COMANDO"
+        extraction_text: "Invoke-Mimikatz -DumpCreds"
+        attributes:
+          type: "command_line"
+
+  # 13) MITRE ATT&CK techniques
+  - text: "The actor used T1059.001 (PowerShell) and T1486 (Data Encrypted for Impact) during the attack."
+    extractions:
+      - extraction_class: "TECNICA_MITRE"
+        extraction_text: "T1059.001"
+        attributes:
+          type: "mitre_technique"
+          name: "PowerShell"
+      - extraction_class: "TECNICA_MITRE"
+        extraction_text: "T1486"
+        attributes:
+          type: "mitre_technique"
+          name: "Data Encrypted for Impact"
+
+  # 14) Incident ticket + Threat actor + APT + Malware (combined)
+  - text: "Ticket CSIRT-IT-0091: Lazarus Group (APT38) ha distribuito Agent Tesla tramite phishing. Server compromesso: fileserver-prod."
+    extractions:
+      - extraction_class: "ID_INCIDENTE"
+        extraction_text: "CSIRT-IT-0091"
+        attributes:
+          type: "incident_id"
+      - extraction_class: "ATTORE_MINACCIA"
+        extraction_text: "Lazarus Group"
+        attributes:
+          type: "threat_actor"
+      - extraction_class: "GRUPPO_APT"
+        extraction_text: "APT38"
+        attributes:
+          type: "apt_group"
+      - extraction_class: "MALWARE"
+        extraction_text: "Agent Tesla"
+        attributes:
+          type: "malware_name"
+      - extraction_class: "SERVER_INTERNO"
+        extraction_text: "fileserver-prod"
+        attributes:
+          type: "internal_server"
+
+  # 15) Network flow with protocol + port + source/dest IPs
+  - text: "Connessione sospetta rilevata: 10.10.5.3:50231 → 203.0.113.99:443 HTTPS."
+    extractions:
+      - extraction_class: "IP_SORGENTE"
+        extraction_text: "10.10.5.3"
+        attributes:
+          type: "ipv4"
+          role: "internal"
+      - extraction_class: "IP_DESTINAZIONE"
+        extraction_text: "203.0.113.99"
+        attributes:
+          type: "ipv4"
+          role: "external"
+      - extraction_class: "NUMERO_PORTA"
+        extraction_text: "443"
+        attributes:
+          type: "destination_port"
+      - extraction_class: "PROTOCOLLO"
+        extraction_text: "HTTPS"
+        attributes:
+          type: "network_protocol"
+
+  # 16) SHA-1 hash + URL (C2 infrastructure)
+  - text: "C2 beacon contacted https://malicious-c2.example[.]net; dropper hash (SHA1): aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d."
+    extractions:
+      - extraction_class: "URL"
+        extraction_text: "https://malicious-c2.example[.]net"
+        attributes:
+          type: "c2_url"
+      - extraction_class: "HASH_FILE"
+        extraction_text: "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d"
+        attributes:
+          type: "sha1"
+
+  # 17) Ransomware + MITRE tactic + Command
+  - text: "BlackCat ha usato la tattica TA0040 (Impact). Comando rilevato: vssadmin delete shadows /all /quiet."
+    extractions:
+      - extraction_class: "RANSOMWARE"
+        extraction_text: "BlackCat"
+        attributes:
+          type: "ransomware_name"
+      - extraction_class: "TECNICA_MITRE"
+        extraction_text: "TA0040"
+        attributes:
+          type: "mitre_tactic"
+          name: "Impact"
+      - extraction_class: "COMANDO"
+        extraction_text: "vssadmin delete shadows /all /quiet"
+        attributes:
+          type: "command_line"
+
+  # 18) Person (operator) + Username + Incident ID
+  - text: "L'analista Luca Ferri (username: l.ferri) ha aperto il ticket INC-2025-0018 alle 09:45."
+    extractions:
+      - extraction_class: "PERSON"
+        extraction_text: "Luca Ferri"
+        attributes:
+          type: "full_name"
+          role: "analyst"
+      - extraction_class: "NOME_UTENTE"
+        extraction_text: "l.ferri"
+        attributes:
+          type: "username"
+      - extraction_class: "ID_INCIDENTE"
+        extraction_text: "INC-2025-0018"
+        attributes:
+          type: "incident_id"
+      - extraction_class: "DATE_TIME"
+        extraction_text: "09:45"
+        attributes:
+          type: "event_time"
+          format: "HH:MM"
+
+  # 19) CVE + Vulnerability name + Organization affected
+  - text: "Log4Shell (CVE-2021-44228) ha colpito i sistemi di Banca Italiana SpA."
+    extractions:
+      - extraction_class: "VULNERABILITA"
+        extraction_text: "Log4Shell"
+        attributes:
+          type: "vulnerability_name"
+      - extraction_class: "VULNERABILITA"
+        extraction_text: "CVE-2021-44228"
+        attributes:
+          type: "cve"
+      - extraction_class: "ORGANIZATION"
+        extraction_text: "Banca Italiana SpA"
+        attributes:
+          type: "company"
+
+  # 20) Process + Internal server + MITRE technique
+  - text: "svchost.exe running on webserver-01 performed credential access via T1003 (OS Credential Dumping)."
+    extractions:
+      - extraction_class: "NOME_PROCESSO"
+        extraction_text: "svchost.exe"
+        attributes:
+          type: "process_name"
+      - extraction_class: "SERVER_INTERNO"
+        extraction_text: "webserver-01"
+        attributes:
+          type: "internal_server"
+      - extraction_class: "TECNICA_MITRE"
+        extraction_text: "T1003"
+        attributes:
+          type: "mitre_technique"
+          name: "OS Credential Dumping"

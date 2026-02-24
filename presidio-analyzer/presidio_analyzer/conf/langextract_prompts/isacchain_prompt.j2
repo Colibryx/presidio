@@ -1,0 +1,49 @@
+Extract personally identifiable information (PII), protected health information (PHI), and cybersecurity threat intelligence indicators (CTI) from the input text.
+The text may be written in English or Italian.
+
+CRITICAL EXTRACTION RULES:
+1. **Source Truth:** ONLY extract from the current input text. Never hallucinate data or infer details not explicitly present.
+2. **Exactness:** Return the exact text spans as they appear in the source (preserve original spelling/formatting).
+3. **Consolidation:** Do not create overlapping spans. If entities are nested, select the longest, most complete span.
+4. **Context:** When populating attributes, infer the entity's role from context (e.g., 'victim' vs 'attacker', 'source' vs 'destination', 'patient' vs 'provider').
+5. **Indicators of Compromise (IoC):** Always extract IP addresses, file hashes, URLs, domains, CVEs, and malware names — these are high-value cybersecurity indicators.
+6. **Fallback:** Only use GENERIC_PII_ENTITY if the text is clearly sensitive but definitely does not fit any of the specific types listed.
+
+ENTITY TYPES TO EXTRACT:
+{% for entity in supported_entities %}
+- {{ entity }}
+{%- endfor %}
+
+{% if enable_generic_consolidation %}
+GENERIC_PII_ENTITY (UNKNOWN ENTITIES):
+- Label as GENERIC_PII_ENTITY only if the data is sensitive PII/PHI/CTI but does not match any specific type above.
+- This acts as a catch-all for safety; do not overuse it for known types.
+{% endif %}
+
+CYBERSECURITY EXTRACTION GUIDANCE:
+- ID_INCIDENTE: Incident identifiers (e.g., INC-2024-0042, CSIRT-IT-001, TKT#9912).
+- MALWARE: Malware family names (e.g., Emotet, Agent Tesla, Cobalt Strike).
+- RANSOMWARE: Ransomware names (e.g., LockBit, BlackCat/ALPHV, Conti, REvil).
+- ATTORE_MINACCIA: Threat actor aliases or codenames (e.g., TA505, FIN7, Sandworm).
+- GRUPPO_APT: APT group designations (e.g., APT28, APT41, Lazarus Group).
+- VULNERABILITA: CVE identifiers or vulnerability names (e.g., CVE-2023-44487, Log4Shell, EternalBlue).
+- HASH_FILE: File hashes in MD5, SHA-1, or SHA-256 format (32, 40, or 64 hex characters).
+- SERVER_INTERNO: Internal host/server names used within an organization (e.g., srv-dc01, fileserver-prod).
+- INDIRIZZO_IP: Generic IP address when role is unknown; prefer IP_SORGENTE or IP_DESTINAZIONE when context is clear.
+- IP_SORGENTE: The originating IP address of network traffic or an attack.
+- IP_DESTINAZIONE: The target IP address of network traffic or an attack.
+- NUMERO_PORTA: Network port numbers (e.g., 443, 8080, 3389).
+- PROTOCOLLO: Network protocols (e.g., HTTP, HTTPS, RDP, SMB, DNS).
+- NOME_UTENTE: Usernames, account names, or login identifiers.
+- PASSWORD: Passwords, passphrases, or authentication secrets.
+- NOME_PROCESSO: Process or executable names (e.g., cmd.exe, powershell.exe, svchost.exe).
+- COMANDO: Shell commands, command-line strings, or scripts.
+- TECNICA_MITRE: MITRE ATT&CK techniques or tactics (e.g., T1059, T1486, TA0001, Credential Dumping).
+
+{% if labels_to_ignore %}
+DO NOT EXTRACT:
+The following types should be ignored and not extracted:
+{% for label in labels_to_ignore %}
+- {{ label }}
+{%- endfor %}
+{% endif %}

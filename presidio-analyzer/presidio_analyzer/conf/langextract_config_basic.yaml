@@ -46,8 +46,8 @@ lm_recognizer:
   min_score: 0.5
 
 langextract:
-  prompt_file: "presidio_analyzer/conf/langextract_prompts/default_pii_phi_prompt.j2"
-  examples_file: "presidio_analyzer/conf/langextract_prompts/default_pii_phi_examples.yaml"
+  prompt_file: "presidio_analyzer/conf/langextract_prompts/isacchain_prompt.j2"
+  examples_file: "presidio_analyzer/conf/langextract_prompts/isacchain_examples.yaml"
 
   # ollama example
   model:
@@ -83,36 +83,122 @@ langextract:
   #      num_ctx: 8192
 
   entity_mappings:
+    # ── PII / PHI ──────────────────────────────────────────────
     person: PERSON
     name: PERSON
+    full_name: PERSON
+    persona: PERSON
     email: EMAIL_ADDRESS
+    email_address: EMAIL_ADDRESS
+    indirizzo_email: EMAIL_ADDRESS
     phone: PHONE_NUMBER
+    phone_number: PHONE_NUMBER
+    telefono: PHONE_NUMBER
+    numero_telefono: PHONE_NUMBER
     ssn: US_SSN
+    us_ssn: US_SSN
+    codice_fiscale: US_SSN
     location: LOCATION
     address: LOCATION
+    indirizzo: LOCATION
+    street_address: LOCATION
+    city: LOCATION
+    citta: LOCATION
     organization: ORGANIZATION
+    company: ORGANIZATION
+    azienda: ORGANIZATION
+    hospital: ORGANIZATION
+    ospedale: ORGANIZATION
     date: DATE_TIME
+    date_time: DATE_TIME
+    time: DATE_TIME
+    data: DATE_TIME
+    ora: DATE_TIME
     credit_card: CREDIT_CARD
+    credit_card_number: CREDIT_CARD
+    carta_di_credito: CREDIT_CARD
     ip_address: IP_ADDRESS
     url: URL
-    # Custom cybersecurity
+    website_url: URL
+    domain: URL
+    dominio: URL
+    # ── Cybersecurity / CTI ────────────────────────────────────
     incident_id: ID_INCIDENTE
+    id_incidente: ID_INCIDENTE
+    ticket: ID_INCIDENTE
+    csirt_ticket: ID_INCIDENTE
     malware: MALWARE
+    malware_name: MALWARE
+    nome_malware: MALWARE
     ransomware: RANSOMWARE
+    ransomware_name: RANSOMWARE
+    nome_ransomware: RANSOMWARE
     internal_server: SERVER_INTERNO
+    server_interno: SERVER_INTERNO
+    hostname: SERVER_INTERNO
+    host: SERVER_INTERNO
     indirizzo_ip: INDIRIZZO_IP
+    generic_ip: INDIRIZZO_IP
     threat_actor: ATTORE_MINACCIA
+    attore_minaccia: ATTORE_MINACCIA
+    actor: ATTORE_MINACCIA
+    threat_group: ATTORE_MINACCIA
     apt_group: GRUPPO_APT
+    gruppo_apt: GRUPPO_APT
+    apt: GRUPPO_APT
+    nation_state_actor: GRUPPO_APT
     vulnerability: VULNERABILITA
+    vulnerabilita: VULNERABILITA
+    vulnerability_name: VULNERABILITA
     cve: VULNERABILITA
+    cve_id: VULNERABILITA
     file_hash: HASH_FILE
+    hash: HASH_FILE
+    hash_file: HASH_FILE
+    md5: HASH_FILE
+    sha1: HASH_FILE
+    sha256: HASH_FILE
+    ioc_hash: HASH_FILE
     username: NOME_UTENTE
+    nome_utente: NOME_UTENTE
+    user: NOME_UTENTE
+    account: NOME_UTENTE
+    login: NOME_UTENTE
     password: PASSWORD
+    passphrase: PASSWORD
+    secret: PASSWORD
+    credential: PASSWORD
     source_ip: IP_SORGENTE
+    ip_sorgente: IP_SORGENTE
+    src_ip: IP_SORGENTE
+    attacker_ip: IP_SORGENTE
     destination_ip: IP_DESTINAZIONE
-    numero_porta: NUMERO_PORTA
+    ip_destinazione: IP_DESTINAZIONE
+    dst_ip: IP_DESTINAZIONE
+    target_ip: IP_DESTINAZIONE
+    victim_ip: IP_DESTINAZIONE
     port_number: NUMERO_PORTA
+    numero_porta: NUMERO_PORTA
+    port: NUMERO_PORTA
+    dst_port: NUMERO_PORTA
+    src_port: NUMERO_PORTA
     protocol: PROTOCOLLO
+    protocollo: PROTOCOLLO
+    network_protocol: PROTOCOLLO
     process_name: NOME_PROCESSO
+    nome_processo: NOME_PROCESSO
+    process: NOME_PROCESSO
+    executable: NOME_PROCESSO
+    eseguibile: NOME_PROCESSO
     command: COMANDO
+    comando: COMANDO
+    command_line: COMANDO
+    cmdline: COMANDO
+    script: COMANDO
+    shell_command: COMANDO
     mitre_technique: TECNICA_MITRE
+    tecnica_mitre: TECNICA_MITRE
+    mitre_tactic: TECNICA_MITRE
+    mitre_attack: TECNICA_MITRE
+    ttp: TECNICA_MITRE
+    attack_technique: TECNICA_MITRE
