@@ -13,9 +13,6 @@ ENV NLP_CONF_FILE=${NLP_CONF_FILE}
 ENV PORT=3000
 ENV WORKERS=1
 
-COPY ${ANALYZER_CONF_FILE} /app/${ANALYZER_CONF_FILE}
-COPY ${RECOGNIZER_REGISTRY_CONF_FILE} /app/${RECOGNIZER_REGISTRY_CONF_FILE}
-COPY ${NLP_CONF_FILE} /app/${NLP_CONF_FILE}
 
 WORKDIR /app
 
@@ -33,8 +30,13 @@ RUN pip install poetry==2.3.2 \
 # install nlp models specified in NLP_CONF_FILE
 COPY ./install_nlp_models.py /app/
 
+COPY ${NLP_CONF_FILE} /app/${NLP_CONF_FILE}
+
 RUN poetry run python install_nlp_models.py --conf_file ${NLP_CONF_FILE}
 
+
+COPY ${ANALYZER_CONF_FILE} /app/${ANALYZER_CONF_FILE}
+COPY ${RECOGNIZER_REGISTRY_CONF_FILE} /app/${RECOGNIZER_REGISTRY_CONF_FILE}
 COPY . /app/
 
 # Create a non-root user and set ownership
