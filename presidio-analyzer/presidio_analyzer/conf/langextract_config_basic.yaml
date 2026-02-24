@@ -16,6 +16,26 @@ lm_recognizer:
     - CREDIT_CARD
     - IP_ADDRESS
     - URL
+    # Le tue entity custom per cybersecurity
+    - ID_INCIDENTE
+    - MALWARE
+    - RANSOMWARE
+    - SERVER_INTERNO
+    - INDIRIZZO_IP
+    - ATTORE_MINACCIA
+    - GRUPPO_APT
+    - VULNERABILITA
+    - HASH_FILE
+    - NOME_UTENTE
+    - EMAIL
+    - PASSWORD
+    - IP_SORGENTE
+    - IP_DESTINAZIONE
+    - NUMERO_PORTA
+    - PROTOCOLLO
+    - NOME_PROCESSO
+    - COMANDO
+    - TECNICA_MITRE
   
   labels_to_ignore:
     - payment_status
@@ -75,3 +95,24 @@ langextract:
     credit_card: CREDIT_CARD
     ip_address: IP_ADDRESS
     url: URL
+    # Custom cybersecurity
+    incident_id: ID_INCIDENTE
+    malware: MALWARE
+    ransomware: RANSOMWARE
+    internal_server: SERVER_INTERNO
+    indirizzo_ip: INDIRIZZO_IP
+    threat_actor: ATTORE_MINACCIA
+    apt_group: GRUPPO_APT
+    vulnerability: VULNERABILITA
+    cve: VULNERABILITA
+    file_hash: HASH_FILE
+    username: NOME_UTENTE
+    password: PASSWORD
+    source_ip: IP_SORGENTE
+    destination_ip: IP_DESTINAZIONE
+    numero_porta: NUMERO_PORTA
+    port_number: NUMERO_PORTA
+    protocol: PROTOCOLLO
+    process_name: NOME_PROCESSO
+    command: COMANDO
+    mitre_technique: TECNICA_MITRE

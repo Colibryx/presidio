@@ -78,6 +78,13 @@ class BasicLangExtractRecognizer(LangExtractRecognizer):
                 and "LANGEXTRACT_API_KEY" in os.environ):
             self.provider_kwargs["api_key"] = os.environ["LANGEXTRACT_API_KEY"]
 
+        # Merge language_model_params into provider_kwargs so they reach
+        # the OllamaLanguageModel constructor (and ultimately _ollama_query).
+        # This is necessary because lx.extract() ignores language_model_params
+        # when a config object is provided.
+        provider_kwargs_with_lm_params = dict(self.provider_kwargs)
+        provider_kwargs_with_lm_params.update(self._language_model_params)
+
         self.lx_model_config = lx_factory.ModelConfig(
             model_id=self.model_id,
             provider=self.provider,
