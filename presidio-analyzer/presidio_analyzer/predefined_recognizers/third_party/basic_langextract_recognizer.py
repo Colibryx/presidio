@@ -88,7 +88,7 @@ class BasicLangExtractRecognizer(LangExtractRecognizer):
         self.lx_model_config = lx_factory.ModelConfig(
             model_id=self.model_id,
             provider=self.provider,
-            provider_kwargs=self.provider_kwargs,
+            provider_kwargs=provider_kwargs_with_lm_params,
         )
 
     def _get_provider_params(self):
