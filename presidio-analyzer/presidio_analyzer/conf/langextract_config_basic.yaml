@@ -51,11 +51,12 @@ langextract:
 
   # ollama example
   model:
-    model_id: "gemma3:1b"
+    model_id: "qwen/qwen3-8b"
     provider:
-      name: "ollama"
+      name: "openai"
       kwargs:
-        model_url: "http://ollama:11434"
+        base_url: TBD
+        api_key: TBD
       extract_params:
         temperature: null
         use_schema_constraints: false

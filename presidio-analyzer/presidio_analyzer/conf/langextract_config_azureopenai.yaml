@@ -34,11 +34,16 @@ langextract:
   model:
     model_id: "gpt-4o"
     temperature: null
-    
-    # Optional: Uncomment to override defaults
+
+    # Optional: Uncomment for OpenAI-style params (max_tokens, timeout, etc.)
+    # language_model_params:
+    #   timeout: 60
+    #   max_tokens: 4096
+
+    # Optional: Uncomment to override extract defaults
     # fence_output: true
     # use_schema_constraints: false
-  
+
   entity_mappings:
     person: PERSON
     name: PERSON

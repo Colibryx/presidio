@@ -153,6 +153,14 @@ class AzureOpenAILangExtractRecognizer(LangExtractRecognizer):
         if self.api_key:
             language_model_params["api_key"] = self.api_key
 
+        # Merge config-based params (max_tokens, timeout, etc.)
+        config_lm_params = dict(self._model_config.get("language_model_params", {}))
+        provider_config = self._model_config.get("provider", {})
+        config_lm_params.update(
+            provider_config.get("language_model_params", {})
+        )
+        language_model_params.update(config_lm_params)
+
         return {
             "model_id": model_id_with_prefix,
             "language_model_params": language_model_params,

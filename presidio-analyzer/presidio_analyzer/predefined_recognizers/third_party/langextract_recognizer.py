@@ -127,6 +127,17 @@ class LangExtractRecognizer(LMRecognizer, ABC):
                         self._model_config.get(param_name, default_value)
                     )
 
+        # Fallback: if model.provider exists, merge provider.extract_params
+        # and provider.language_model_params (nested config structure)
+        provider_config = self._model_config.get("provider", {})
+        if provider_config:
+            self._extract_params.update(
+                provider_config.get("extract_params", {})
+            )
+            self._language_model_params.update(
+                provider_config.get("language_model_params", {})
+            )
+
     def _call_llm(self, text: str, entities: List[str], **kwargs):
         """Call LangExtract LLM."""
         # Build extract params

@@ -64,12 +64,6 @@ class BasicLangExtractRecognizer(LangExtractRecognizer):
         self.provider = provider_config.get("name")
         self.provider_kwargs = provider_config.get("kwargs", {})
 
-        # Not ideal, but update _extract_params now that self.config is fully loaded.
-        self._extract_params.update(provider_config.get("extract_params", {}))
-        self._language_model_params.update(
-            provider_config.get("language_model_params", {})
-        )
-
         if not self.provider:
             raise ValueError("Configuration must contain "
                              "'langextract.model.provider.name'")

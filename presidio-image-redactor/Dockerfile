@@ -30,7 +30,7 @@ RUN pip install poetry==2.3.2 \
     && rm -rf $(poetry config cache-dir)
 
 # Install spaCy model during build (as root) so it's available to non-root user at runtime
-RUN python -m spacy download en_core_web_lg
+RUN python -m spacy download en_core_web_sm
 
 COPY . /app/
 
