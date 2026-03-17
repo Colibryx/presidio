@@ -3,11 +3,16 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from dotenv import load_dotenv
+
 from presidio_analyzer.llm_utils import lx_factory
-from presidio_analyzer.predefined_recognizers.third_party.\
-    langextract_recognizer import LangExtractRecognizer
+from presidio_analyzer.predefined_recognizers.third_party.langextract_recognizer import (
+    LangExtractRecognizer,
+)
 
 logger = logging.getLogger("presidio-analyzer")
+
+load_dotenv()
 
 DEFAULT_EXTRACT_PARAMS = {
     "max_char_buffer": 400,
@@ -15,10 +20,8 @@ DEFAULT_EXTRACT_PARAMS = {
     "fence_output": False,
 }
 
-DEFAULT_LANGUAGE_MODEL_PARAMS = {
-    "timeout": 240,
-    "num_ctx": 8192
-}
+DEFAULT_LANGUAGE_MODEL_PARAMS = {"timeout": 240, "num_ctx": 8192}
+
 
 class BasicLangExtractRecognizer(LangExtractRecognizer):
     """Basic LangExtract recognizer using configurable backend."""
@@ -33,7 +36,7 @@ class BasicLangExtractRecognizer(LangExtractRecognizer):
         supported_language: str = "en",
         context: Optional[list] = None,
         name="BasicLangExtractRecognizer",
-        **kwargs
+        **kwargs,
     ):
         """Initialize Basic LangExtract recognizer.
 
@@ -53,8 +56,8 @@ class BasicLangExtractRecognizer(LangExtractRecognizer):
             supported_language=supported_language,
             extract_params={
                 "extract": DEFAULT_EXTRACT_PARAMS,
-                "language_model": DEFAULT_LANGUAGE_MODEL_PARAMS
-            }
+                "language_model": DEFAULT_LANGUAGE_MODEL_PARAMS,
+            },
         )
 
         model_config: Dict[str, Any] = self.config.get("model", {})
@@ -65,12 +68,27 @@ class BasicLangExtractRecognizer(LangExtractRecognizer):
         self.provider_kwargs = provider_config.get("kwargs", {})
 
         if not self.provider:
-            raise ValueError("Configuration must contain "
-                             "'langextract.model.provider.name'")
+            raise ValueError(
+                "Configuration must contain 'langextract.model.provider.name'"
+            )
 
-        if ("api_key" not in self.provider_kwargs
-                and "LANGEXTRACT_API_KEY" in os.environ):
-            self.provider_kwargs["api_key"] = os.environ["LANGEXTRACT_API_KEY"]
+        if self.provider_kwargs.get("base_url") is None:
+            if env_value := os.environ.get("LANGEXTRACT_BASE_URL"):
+                self.provider_kwargs["base_url"] = env_value
+            else:
+                self.provider_kwargs.pop("base_url", None)
+
+        if self.provider_kwargs.get("api_key") is None:
+            if env_value := os.environ.get("LANGEXTRACT_API_KEY"):
+                self.provider_kwargs["api_key"] = env_value
+            else:
+                self.provider_kwargs.pop("api_key", None)
+
+        # if (
+        #     "api_key" not in self.provider_kwargs
+        #     and "LANGEXTRACT_API_KEY" in os.environ
+        # ):
+        #     self.provider_kwargs["api_key"] = os.environ["LANGEXTRACT_API_KEY"]
 
         # Merge language_model_params into provider_kwargs so they reach
         # the OllamaLanguageModel constructor (and ultimately _ollama_query).

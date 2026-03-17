@@ -49,39 +49,21 @@ langextract:
   prompt_file: "presidio_analyzer/conf/langextract_prompts/isacchain_prompt.j2"
   examples_file: "presidio_analyzer/conf/langextract_prompts/isacchain_examples.yaml"
 
-  # ollama example
   model:
-    model_id: "qwen/qwen3-8b"
+    model_id: "qwen/qwen3.5-35b-a3b"
     provider:
       name: "openai"
       kwargs:
-        base_url: TBD
-        api_key: TBD
+        base_url: null
+        api_key: null
       extract_params:
         temperature: null
         use_schema_constraints: false
         fence_output: false
-        max_char_buffer: 400
+        max_char_buffer: 2000
       language_model_params:
         timeout: 240
-        num_ctx: 8192
-
-  # litellm example
-  #model:
-  #  model_id: "ollama/qwen2.5:1.5b"
-  #  provider:
-  #    name: "openai"
-  #    kwargs:
-  #      base_url: "http://localhost:4000"
-  #      api_key: "API_KEY_GOES_HERE"
-  #    extract_params:
-  #      temperature: null
-  #      use_schema_constraints: false
-  #      fence_output: false
-  #      max_char_buffer: 400
-  #    language_model_params:
-  #      timeout: 240
-  #      num_ctx: 8192
+        num_ctx: 256000
 
   entity_mappings:
     # ── PII / PHI ──────────────────────────────────────────────

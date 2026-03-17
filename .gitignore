@@ -141,3 +141,8 @@ mkdocs/
 # Visual Studio
 /.vs
 /TestResults
+
+# E2E manual evaluation output
+e2e-tests/output/
+e2e-tests/input_samples/
+e2e-tests/scripts/
