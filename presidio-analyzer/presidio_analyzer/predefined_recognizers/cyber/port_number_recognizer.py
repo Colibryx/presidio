@@ -14,7 +14,7 @@ class PortNumberRecognizer(PatternRecognizer):
     """
 
     PATTERNS = [
-        Pattern("PORT", r"\b\d{1,5}\b"),
+        Pattern("PORT", r"\b\d{1,5}\b", 0.5),
     ]
 
     CONTEXT = ["port", "port number", "port number"]

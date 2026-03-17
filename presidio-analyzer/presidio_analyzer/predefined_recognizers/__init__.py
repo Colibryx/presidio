@@ -79,6 +79,12 @@ from .country_specific.us.us_npi_recognizer import UsNpiRecognizer
 from .country_specific.us.us_passport_recognizer import UsPassportRecognizer
 from .country_specific.us.us_ssn_recognizer import UsSsnRecognizer
 
+# Cyber recognizers
+from .cyber.cve_recognizer import CVERecognizer
+from .cyber.cwe_recognizer import CWERecognizer
+from .cyber.hash_recognizer import HashRecognizer
+from .cyber.port_number_recognizer import PortNumberRecognizer
+
 # Generic recognizers
 from .generic.credit_card_recognizer import CreditCardRecognizer
 from .generic.crypto_recognizer import CryptoRecognizer
@@ -129,6 +135,10 @@ NLP_RECOGNIZERS = {
 __all__ = [
     "AbaRoutingRecognizer",
     "CreditCardRecognizer",
+    "CVERecognizer",
+    "CWERecognizer",
+    "HashRecognizer",
+    "PortNumberRecognizer",
     "CryptoRecognizer",
     "DateRecognizer",
     "EmailRecognizer",

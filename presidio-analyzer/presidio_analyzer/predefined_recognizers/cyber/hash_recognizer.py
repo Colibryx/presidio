@@ -33,11 +33,11 @@ class HashRecognizer(PatternRecognizer):
     """
 
     PATTERNS = [
-        Pattern("MD5", r"\b[a-fA-F0-9]{32}\b"),
-        Pattern("SHA-1", r"\b[a-fA-F0-9]{40}\b"),
-        Pattern("SHA-256", r"\b[a-fA-F0-9]{64}\b"),
-        Pattern("SHA-384", r"\b[a-fA-F0-9]{96}\b"),
-        Pattern("SHA-512", r"\b[a-fA-F0-9]{128}\b"),
+        Pattern("MD5", r"\b[a-fA-F0-9]{32}\b", 0.5),
+        Pattern("SHA-1", r"\b[a-fA-F0-9]{40}\b", 0.5),
+        Pattern("SHA-256", r"\b[a-fA-F0-9]{64}\b", 0.5),
+        Pattern("SHA-384", r"\b[a-fA-F0-9]{96}\b", 0.5),
+        Pattern("SHA-512", r"\b[a-fA-F0-9]{128}\b", 0.5),
     ]
 
     CONTEXT = ["hash", "md5", "sha1", "sha256", "sha384", "sha512"]
