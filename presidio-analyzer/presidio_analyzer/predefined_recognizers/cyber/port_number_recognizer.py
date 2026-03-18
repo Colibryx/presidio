@@ -14,17 +14,18 @@ class PortNumberRecognizer(PatternRecognizer):
     """
 
     PATTERNS = [
-        Pattern("PORT", r"\b\d{1,5}\b", 0.5),
+        # Score 0.2: sotto soglia 0.35, richiede contesto ("port") per boost
+        Pattern("PORT_NUMBER", r"\b\d{1,5}\b", 0.2),
     ]
 
-    CONTEXT = ["port", "port number", "port number"]
+    CONTEXT = ["port", "ports", "port number", "porta", "numero"]
 
     def __init__(
         self,
         patterns: Optional[List[Pattern]] = None,
         context: Optional[List[str]] = None,
         supported_language: str = "en",
-        supported_entity: str = "PORT",
+        supported_entity: str = "PORT_NUMBER",
         name: Optional[str] = None,
     ):
         patterns = patterns if patterns else self.PATTERNS

@@ -1,10 +1,50 @@
 """LangExtract helper utilities."""
+
 import logging
 from typing import Dict, List, Optional
 
 from presidio_analyzer import AnalysisExplanation, RecognizerResult
 
 logger = logging.getLogger("presidio-analyzer")
+
+
+def _patch_openai_extra_body():
+    """Patch LangExtract OpenAI provider to forward extra_body to the API.
+
+    LangExtract's OpenAI provider only passes a whitelist of params and omits
+    extra_body. This patch ensures extra_body (e.g. enable_thinking for Qwen)
+    is merged into the API request.
+    """
+    try:
+        from langextract.providers.openai import OpenAILanguageModel
+
+        _original_process = OpenAILanguageModel._process_single_prompt
+
+        def _patched_process_with_extra_body(self, prompt, config):
+            extra_body = getattr(self, "_extra_kwargs", {}).get("extra_body")
+            original_create = None
+            if extra_body is not None:
+                original_create = self._client.chat.completions.create
+
+                def create_with_extra_body(**kwargs):
+                    merged = dict(kwargs)
+                    existing = merged.get("extra_body") or {}
+                    merged["extra_body"] = {**existing, **extra_body}
+                    return original_create(**merged)
+
+                self._client.chat.completions.create = create_with_extra_body
+            try:
+                return _original_process(self, prompt, config)
+            finally:
+                if original_create is not None:
+                    self._client.chat.completions.create = original_create
+
+        OpenAILanguageModel._process_single_prompt = _patched_process_with_extra_body
+    except Exception as e:
+        logger.debug(
+            "Could not patch LangExtract OpenAI provider for extra_body: %s", e
+        )
+
 
 try:
     import langextract as lx
@@ -15,6 +55,10 @@ try:
     # built-in provider rather than inferred from the model_id.
     lx.providers.load_builtins_once()
     lx.providers.load_plugins_once()
+
+    # Patch OpenAI provider to pass extra_body to the API (LangExtract omits it).
+    # Required for provider-specific params like Qwen's enable_thinking.
+    _patch_openai_extra_body()
 except ImportError:
     lx = None
     lx_factory = None
@@ -69,8 +113,7 @@ def extract_lm_config(config: Dict) -> Dict:
 
 
 def get_supported_entities(
-    lm_config: Dict,
-    langextract_config: Dict
+    lm_config: Dict, langextract_config: Dict
 ) -> Optional[List[str]]:
     """Get supported entities list, checking LM config first then LangExtract config.
 
@@ -78,9 +121,8 @@ def get_supported_entities(
     :param langextract_config: LangExtract configuration dictionary.
     :return: List of supported entity types, or None if not specified.
     """
-    return (
-        lm_config.get("supported_entities")
-        or langextract_config.get("supported_entities")
+    return lm_config.get("supported_entities") or langextract_config.get(
+        "supported_entities"
     )
 
 
@@ -94,8 +136,7 @@ def create_reverse_entity_mapping(entity_mappings: Dict) -> Dict:
 
 
 def calculate_extraction_confidence(
-    extraction,
-    alignment_scores: Optional[Dict[str, float]] = None
+    extraction, alignment_scores: Optional[Dict[str, float]] = None
 ) -> float:
     """Calculate confidence score based on extraction alignment status.
 
@@ -108,9 +149,7 @@ def calculate_extraction_confidence(
     if alignment_scores is None:
         alignment_scores = DEFAULT_ALIGNMENT_SCORES
 
-    if not hasattr(extraction, "alignment_status") or not (
-        extraction.alignment_status
-    ):
+    if not hasattr(extraction, "alignment_status") or not (extraction.alignment_status):
         return default_score
 
     status = str(extraction.alignment_status).upper()
@@ -127,7 +166,7 @@ def convert_langextract_to_presidio_results(
     supported_entities: List[str],
     enable_generic_consolidation: bool,
     recognizer_name: str,
-    alignment_scores: Optional[Dict[str, float]] = None
+    alignment_scores: Optional[Dict[str, float]] = None,
 ) -> List[RecognizerResult]:
     """Convert LangExtract extraction results to Presidio RecognizerResult objects.
 
@@ -177,17 +216,16 @@ def convert_langextract_to_presidio_results(
         confidence = calculate_extraction_confidence(extraction, alignment_scores)
 
         metadata = {}
-        if hasattr(extraction, 'attributes') and extraction.attributes:
-            metadata['attributes'] = extraction.attributes
-        if hasattr(extraction, 'alignment_status') and extraction.alignment_status:
-            metadata['alignment'] = str(extraction.alignment_status)
+        if hasattr(extraction, "attributes") and extraction.attributes:
+            metadata["attributes"] = extraction.attributes
+        if hasattr(extraction, "alignment_status") and extraction.alignment_status:
+            metadata["alignment"] = str(extraction.alignment_status)
 
         explanation = AnalysisExplanation(
             recognizer=recognizer_name,
             original_score=confidence,
             textual_explanation=(
-                f"LangExtract extraction with "
-                f"{extraction.alignment_status} alignment"
+                f"LangExtract extraction with {extraction.alignment_status} alignment"
                 if hasattr(extraction, "alignment_status")
                 and extraction.alignment_status
                 else "LangExtract extraction"
@@ -200,7 +238,7 @@ def convert_langextract_to_presidio_results(
             end=extraction.char_interval.end_pos,
             score=confidence,
             analysis_explanation=explanation,
-            recognition_metadata=metadata if metadata else None
+            recognition_metadata=metadata if metadata else None,
         )
 
         results.append(result)

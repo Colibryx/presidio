@@ -140,3 +140,19 @@ def test_get_analysis_explanation():
     test_region = "US"
     explanation = phone_recognizer._get_analysis_explanation(test_region)
     assert explanation.recognizer == "PhoneRecognizer"
+
+
+def test_phone_recognizer_filters_false_positives(spacy_nlp_engine):
+    """Test that IP addresses, dates, and incident IDs are not detected as phone numbers."""
+    recognizer = PhoneRecognizer()
+    nlp_artifacts = spacy_nlp_engine.process_text(
+        "Incident INC-2025-0042: On 2025-03-15. IP 203.0.113.42 targeted 10.0.1.50.",
+        "en",
+    )
+    results = recognizer.analyze(
+        "Incident INC-2025-0042: On 2025-03-15. IP 203.0.113.42 targeted 10.0.1.50.",
+        ["PHONE_NUMBER"],
+        nlp_artifacts=nlp_artifacts,
+    )
+    # Should not detect 2025-0042, 2025-03-15, 203.0.113.42, 10.0.1.50 as phone numbers
+    assert len(results) == 0

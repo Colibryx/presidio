@@ -1,3 +1,5 @@
+import ipaddress
+import re
 from typing import List, Optional
 
 import phonenumbers
@@ -118,6 +120,8 @@ class PhoneRecognizer(LocalRecognizer):
             for match in phonenumbers.PhoneNumberMatcher(
                 text, region, leniency=self.leniency
             ):
+                if self._is_false_positive(text, match):
+                    continue
                 try:
                     parsed_number = phonenumbers.parse(text[match.start : match.end])
                     region = phonenumbers.region_code_for_number(parsed_number)
@@ -130,6 +134,30 @@ class PhoneRecognizer(LocalRecognizer):
                     ]
 
         return EntityRecognizer.remove_duplicates(results)
+
+    def _is_false_positive(self, text: str, match) -> bool:
+        """Filter out common false positives: IP addresses, dates, incident/CVE IDs."""
+        matched_text = text[match.start : match.end]
+
+        # IP address (dotted decimal notation)
+        try:
+            ipaddress.ip_address(matched_text)
+            return True
+        except ValueError:
+            pass
+
+        # Date format YYYY-MM-DD
+        if re.match(r"^\d{4}-\d{2}-\d{2}$", matched_text):
+            return True
+
+        # Incident/CVE ID format YYYY-NNNN (e.g. INC-2025-0042, CVE-2025-0042)
+        if re.match(r"^\d{4}-\d{4}$", matched_text):
+            prefix_start = max(0, match.start - 4)
+            prefix = text[prefix_start : match.start]
+            if prefix.endswith("INC-") or prefix.endswith("CVE-"):
+                return True
+
+        return False
 
     def _get_recognizer_result(self, match, text, region, nlp_artifacts):
         result = RecognizerResult(

@@ -20,6 +20,14 @@ from presidio_analyzer.lm_recognizer import LMRecognizer
 
 logger = logging.getLogger("presidio-analyzer")
 
+# Entity types that benefit from cybersecurity extraction guidance in the prompt
+_CYBERSECURITY_ENTITIES = frozenset({
+    "INCIDENT_ID", "MALWARE", "RANSOMWARE", "THREAT_ACTOR", "THREAT_GROUP",
+    "VULNERABILITY", "CVE", "CWE", "HASH_FILE", "INTERNAL_SERVER", "SOURCE_IP",
+    "DESTINATION_IP", "PORT_NUMBER", "PROTOCOL", "USERNAME", "PASSWORD",
+    "PROCESS_NAME", "COMMAND", "MITRE_TECHNIQUE", "IP_ADDRESS",
+})
+
 
 class LangExtractRecognizer(LMRecognizer, ABC):
     """
@@ -94,14 +102,8 @@ class LangExtractRecognizer(LMRecognizer, ABC):
         )
         self.examples = convert_to_langextract_format(examples_data)
 
-        prompt_template = load_prompt_file(
+        self._prompt_template = load_prompt_file(
             langextract_config["prompt_file"]
-        )
-        self.prompt_description = render_jinja_template(
-            prompt_template,
-            supported_entities=self.supported_entities,
-            enable_generic_consolidation=self.enable_generic_consolidation,
-            labels_to_ignore=self.labels_to_ignore,
         )
 
         self.entity_mappings = langextract_config["entity_mappings"]
@@ -140,10 +142,20 @@ class LangExtractRecognizer(LMRecognizer, ABC):
 
     def _call_llm(self, text: str, entities: List[str], **kwargs):
         """Call LangExtract LLM."""
+        # Render prompt with requested entities only (reduces tokens, improves focus)
+        show_cybersecurity_guidance = bool(set(entities) & _CYBERSECURITY_ENTITIES)
+        prompt_description = render_jinja_template(
+            self._prompt_template,
+            supported_entities=entities,
+            enable_generic_consolidation=self.enable_generic_consolidation,
+            labels_to_ignore=self.labels_to_ignore,
+            show_cybersecurity_guidance=show_cybersecurity_guidance,
+        )
+
         # Build extract params
         extract_params = {
             "text": text,
-            "prompt": self.prompt_description,
+            "prompt": prompt_description,
             "examples": self.examples,
             "debug": self.debug,
         }

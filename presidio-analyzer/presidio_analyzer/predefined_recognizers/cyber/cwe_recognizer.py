@@ -15,7 +15,7 @@ class CWERecognizer(PatternRecognizer):
 
     PATTERNS = [
         Pattern(
-            "CVE",
+            "CWE",
             r"\bCWE-\d{1,5}\b",
             0.5,
         ),
