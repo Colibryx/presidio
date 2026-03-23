@@ -9,6 +9,15 @@ CRITICAL EXTRACTION RULES:
 5. **Indicators of Compromise (IoC):** Always extract IP addresses, file hashes, URLs, domains, CVEs (Common Vulnerabilities and Exposures), CWEs (Common Weakness Enumeration), and malware names — these are high-value cybersecurity indicators.
 6. **Fallback:** Only use GENERIC_PII_ENTITY if the text is clearly sensitive but definitely does not fit any of the specific types listed.
 
+COMPANY AND ORGANIZATION EXTRACTION GUIDANCE:
+Extract every distinct company, legal entity, and organization named in the text — do not skip entities that lack a legal suffix or look informal.
+
+- **Italian legal forms (non-exhaustive):** S.p.A., S.r.l., S.r.l.s., S.n.c., S.a.s., S.u.r.l., S.c.p.A., cooperativa sociale, società cooperativa, fondazione, associazione, ONLUS, ente, consorzio, studio (professionale), università, ASL, comune, regione, ministero when used as a named body.
+- **Other European / common suffixes:** SpA, SPA, SRL, GmbH, AG, SA, SAS, SARL, BV, NV, Ltd, Limited, PLC, LLP, SE.
+- **Context cues:** When a name appears as client, customer, supplier, vendor, partner, employer, contractor, issuer, beneficiary, bank, insurer, manufacturer, subsidiary, or parent company — or after phrases like "presso", "c/o", "per conto di", "filiale di", "controllata da", "in outsourcing a" — extract it as an organization even without S.r.l./S.p.A.
+- **Variants:** Capture trade names, brand lines, and divisions when named as entities (e.g., "divisione X di Y" → extract the full or clearest span per consolidation rules). Include well-known acronyms when they denote a specific organization (ENI, IBM, ENEL).
+- **Still apply source rules:** Extract only strings actually present; use the longest coherent span; do not invent legal forms not written in the text.
+
 ENTITY TYPES TO EXTRACT:
 {% for entity in supported_entities %}
 - {{ entity }}
@@ -42,6 +51,7 @@ CYBERSECURITY EXTRACTION GUIDANCE:
 - PROCESS_NAME: Process or executable names (e.g., cmd.exe, powershell.exe, svchost.exe).
 - COMMAND: Shell commands, command-line strings, or scripts.
 - MITRE_TECHNIQUE: MITRE ATT&CK techniques or tactics (e.g., T1059, T1486, TA0001, Credential Dumping).
+- ORGANIZATION: Organizations or companies (e.g., Banca Italiana SpA, Acme Corp).
 
 {% endif %}
 {% if labels_to_ignore %}

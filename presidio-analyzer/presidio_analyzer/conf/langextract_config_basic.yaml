@@ -58,7 +58,7 @@ langextract:
         temperature: 0
         use_schema_constraints: false
         fence_output: false
-        max_char_buffer: 2000
+        max_char_buffer: 20000
       language_model_params:
         timeout: 240
         # max_output_tokens: 10000
