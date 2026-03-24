@@ -10,7 +10,8 @@ CORE RULES FOR ENTITY EXTRACTION:
 2. **Victim vs Attacker:** Extract ONLY when the context explicitly shows it is the victim organization, person, or asset. Ransomware operations or APT groups are NEVER extracted, even if they sound like company names.
 3. **LOCATION vs Attacker Brands:** Use LOCATION only for real geography (countries, regions, cities). Do NOT label ransomware brands as LOCATION even if they use mythological or place names. 
    - *Possessive geography:* Extract the contiguous country/region name even in possessive form (e.g., extract `Italy` from `Italy's laws`).
-4. **Strict Fallback Rule (Ambiguity):** If the text is a small chunk and it is ambiguous whether an entity (like an IP, domain, or organization name) belongs to the victim or the attacker, **DO NOT EXTRACT IT**. Prioritize keeping potential Threat Intelligence in cleartext.
+4. **NATIONALITY:** Extract the nationality of the victim or the person mentioned in the text. Or the nationality of the context in which the malwre can expand.
+5. **Strict Fallback Rule (Ambiguity):** If the text is a small chunk and it is ambiguous whether an entity (like an IP, domain, or organization name) belongs to the victim or the attacker, **DO NOT EXTRACT IT**. Prioritize keeping potential Threat Intelligence in cleartext.
 
 COMPANY AND ORGANIZATION EXTRACTION GUIDANCE:
 Extract every occurrence of each **victim-side** company, legal entity, and organization.

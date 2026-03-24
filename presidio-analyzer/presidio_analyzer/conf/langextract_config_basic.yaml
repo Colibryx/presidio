@@ -11,20 +11,14 @@ lm_recognizer:
     - PHONE_NUMBER
     - US_SSN
     - LOCATION
+    - NATIONALITY
     - ORGANIZATION
     - DATE_TIME
     - CREDIT_CARD
     - IP_ADDRESS
     - URL
     - INCIDENT_ID
-    # - MALWARE
-    # - RANSOMWARE
     - INTERNAL_SERVER
-    # - THREAT_ACTOR
-    # - THREAT_GROUP
-    # - VULNERABILITY
-    # - CVE
-    # - CWE
     - HASH_FILE
     - USERNAME
     - PASSWORD
@@ -33,6 +27,13 @@ lm_recognizer:
     - PROCESS_NAME
     - COMMAND
     # - MITRE_TECHNIQUE
+    # - THREAT_ACTOR
+    # - THREAT_GROUP
+    # - VULNERABILITY
+    # - CVE
+    # - CWE
+    # - MALWARE
+    # - RANSOMWARE
   
   labels_to_ignore:
     - payment_status
