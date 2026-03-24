@@ -306,15 +306,24 @@ recognizers:
     enabled: false
     context: [port, port number, port number, porta, numero]
 
-  # Ner recognizers
 
-  # - name: SpacyRecognizer
-  #   type: predefined
-  #   enabled: false
+  # NLP engine recognizers: enable or disable each engine to use it for name entity recognition.
+  # Omitting an engine or not specifying the enable field sets the default to true.
+  - name: SpacyRecognizer
+    type: predefined
+    enabled: false
+  - name: StanzaRecognizer
+    type: predefined
+    enabled: false
+  - name: TransformersRecognizer
+    type: predefined
+    enabled: false
 
   - name: BasicLangExtractRecognizer
     supported_languages:
       - en
+      - it
+      - es
     type: predefined
     enabled: true
     config_path: presidio_analyzer/conf/langextract_config_basic.yaml

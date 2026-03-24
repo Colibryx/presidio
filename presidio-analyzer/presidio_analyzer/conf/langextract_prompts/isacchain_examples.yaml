@@ -118,6 +118,10 @@ examples:
 
   - text: "Traffic from 185.220.101.45 to 192.168.10.20 on port 3389 via RDP; la postazione interna coinvolta era WS-FIN-042."
     extractions:
+      - extraction_class: "DESTINATION_IP"
+        extraction_text: "192.168.10.20"
+      - extraction_class: "PORT_NUMBER"
+        extraction_text: "3389"
       - extraction_class: "INTERNAL_SERVER"
         extraction_text: "WS-FIN-042"
         attributes:
@@ -134,13 +138,18 @@ examples:
         attributes:
           type: "company"
 
-  # Ransomware brand "Qilin" must not be LOCATION or ORGANIZATION (reads like a place name but is attacker)
-  - text: "Contoso Ltd, a Germany-based company, was targeted by the Qilin ransomware operation. No detailed narrative from Qilin specifies the vector. The incident aligns with Qilin's pattern; monitor the Qilin leak site."
+  # Ransomware brand "Qilin" must not be LOCATION or ORGANIZATION (reads like a place name but is attacker).
+  # Same country twice: hyphenated adjective + possessive — both geography mentions are LOCATION (not Qilin's).
+  - text: "Contoso Ltd, a Germany-based company, was targeted by the Qilin ransomware operation. No detailed narrative from Qilin specifies the vector. Given Germany's priority in sector regulation, regulators took interest. The incident aligns with Qilin's pattern; monitor the Qilin leak site."
     extractions:
       - extraction_class: "ORGANIZATION"
         extraction_text: "Contoso Ltd"
         attributes:
           type: "company"
+      - extraction_class: "LOCATION"
+        extraction_text: "Germany"
+        attributes:
+          type: "country"
       - extraction_class: "LOCATION"
         extraction_text: "Germany"
         attributes:
@@ -152,3 +161,14 @@ examples:
         extraction_text: "Banca Italiana SpA"
         attributes:
           type: "company"
+
+  - text: "L'attaccante ha sostituito il file legittimo payroll_Q3.xlsx (hash: 8d9c2...) con un payload malevolo denominato crypt.exe. Il processo aziendale di backup (sync_agent.exe) è stato interrotto."
+    extractions:
+      - extraction_class: "HASH_FILE"
+        extraction_text: "8d9c2..."
+        attributes:
+          type: "legitimate_file_hash"
+      - extraction_class: "PROCESS_NAME"
+        extraction_text: "sync_agent.exe"
+        attributes:
+          type: "victim_process"
