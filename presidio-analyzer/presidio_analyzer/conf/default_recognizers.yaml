@@ -25,133 +25,133 @@ recognizers:
       context: [carta, credito, bancomat, visa, mastercard, cc, amex, pagamento, numero, cvv, scadenza, billing, checkout, acquisto]
     - language: pl
     type: predefined
-    enabled: true
+    enabled: false
 
   - name: UsBankRecognizer
     supported_languages: 
     - en
     type: predefined
-    enabled: true
+    enabled: false
 
   - name: UsLicenseRecognizer
     supported_languages: 
     - en
     type: predefined
-    enabled: true
+    enabled: false
 
   - name: UsItinRecognizer
     supported_languages: 
     - en
     type: predefined
-    enabled: true
+    enabled: false
   
   - name: UsPassportRecognizer
     supported_languages: 
     - en
     type: predefined
-    enabled: true
+    enabled: false
   
   - name: UsSsnRecognizer
     supported_languages:
     - en
     type: predefined
-    enabled: true
+    enabled: false
 
   # - name: UsMbiRecognizer
   #   supported_languages:
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: UsNpiRecognizer
   #   supported_languages:
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   - name: NhsRecognizer
     supported_languages: 
     - en
     type: predefined
-    enabled: true
+    enabled: false
 
   # - name: UkNinoRecognizer
   #   supported_languages:
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: UkPostcodeRecognizer
   #   supported_languages:
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: SgFinRecognizer
   #   supported_languages: 
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: AuAbnRecognizer
   #   supported_languages: 
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: AuAcnRecognizer
   #   supported_languages: 
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: AuTfnRecognizer
   #   supported_languages: 
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: AuMedicareRecognizer
   #   supported_languages: 
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: NgNinRecognizer
   #   supported_languages:
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: NgVehicleRegistrationRecognizer
   #   supported_languages:
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: InPanRecognizer
   #   supported_languages: 
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: InAadhaarRecognizer
   #   supported_languages: 
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: InVehicleRegistrationRecognizer
   #   supported_languages: 
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: InPassportRecognizer
   #   supported_languages: 
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: EsNifRecognizer
   #   supported_languages: 
@@ -167,31 +167,31 @@ recognizers:
     supported_languages: 
     - it
     type: predefined
-    enabled: true
+    enabled: false
 
   - name: ItFiscalCodeRecognizer
     supported_languages: 
     - it
     type: predefined
-    enabled: true
+    enabled: false
 
   - name: ItVatCodeRecognizer
     supported_languages: 
     - it
     type: predefined
-    enabled: true
+    enabled: false
 
   - name: ItIdentityCardRecognizer
     supported_languages: 
     - it
     type: predefined
-    enabled: true
+    enabled: false
 
   - name: ItPassportRecognizer
     supported_languages: 
     - it
     type: predefined
-    enabled: true
+    enabled: false
 
   # - name: PlPeselRecognizer
   #   supported_languages: 
@@ -203,102 +203,102 @@ recognizers:
   #   - ko
   #   - kr
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: KrRrnRecognizer
   #   supported_languages: 
   #   - ko
   #   - kr
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: KrDriverLicenseRecognizer
   #   supported_languages: 
   #   - ko
   #   - kr
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: KrFrnRecognizer
   #   supported_languages: 
   #   - ko
   #   - kr
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: ThTninRecognizer
   #   supported_languages:
   #   - th
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: HuggingFaceNerRecognizer
   #   supported_languages:
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   - name: CryptoRecognizer
     type: predefined
-    enabled: true
+    enabled: false
 
   - name: DateRecognizer
     type: predefined
-    enabled: true
+    enabled: false
 
   - name: EmailRecognizer
     type: predefined
-    enabled: true
+    enabled: false
 
   - name: IbanRecognizer
     type: predefined
-    enabled: true
+    enabled: false
 
   - name: IpRecognizer
     type: predefined
-    enabled: true
+    enabled: false
 
   - name: MedicalLicenseRecognizer
     type: predefined
-    enabled: true
+    enabled: false
 
   - name: MacAddressRecognizer
     type: predefined
-    enabled: true
+    enabled: false
 
   - name: PhoneRecognizer
     type: predefined
     context: [phone, number, telephone, cell, cellphone, mobile, call, cellulare, numero, telefono, tel, cell]
-    enabled: true
+    enabled: false
 
   - name: UrlRecognizer
     type: predefined
-    enabled: true
+    enabled: false
 
   # - name: InVoterRecognizer
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # - name: InGstinRecognizer
   #   supported_languages: 
   #   - en
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   # Cybersecurity specific recognizers
   - name: CVERecognizer
     type: predefined
-    enabled: true
+    enabled: false
     context: [cve, vulnerability, exploit, security, vulnerabilità, sicurezza]
 
   - name: CWERecognizer
     type: predefined
-    enabled: true
+    enabled: false
     context: [cwe, weakness, exploit, security, vulnerabilità, sicurezza, debolezza]
 
   - name: HashRecognizer
     type: predefined
-    enabled: true
+    enabled: false
     context: [hash, md5, sha1, sha256, sha384, sha512]
 
   - name: PortNumberRecognizer
@@ -310,7 +310,7 @@ recognizers:
 
   # - name: SpacyRecognizer
   #   type: predefined
-  #   enabled: true
+  #   enabled: false
 
   - name: BasicLangExtractRecognizer
     supported_languages:

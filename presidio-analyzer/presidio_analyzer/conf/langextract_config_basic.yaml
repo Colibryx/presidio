@@ -17,14 +17,14 @@ lm_recognizer:
     - IP_ADDRESS
     - URL
     - INCIDENT_ID
-    - MALWARE
-    - RANSOMWARE
+    # - MALWARE
+    # - RANSOMWARE
     - INTERNAL_SERVER
-    - THREAT_ACTOR
-    - THREAT_GROUP
-    - VULNERABILITY
-    - CVE
-    - CWE
+    # - THREAT_ACTOR
+    # - THREAT_GROUP
+    # - VULNERABILITY
+    # - CVE
+    # - CWE
     - HASH_FILE
     - USERNAME
     - PASSWORD
@@ -32,14 +32,14 @@ lm_recognizer:
     - PROTOCOL
     - PROCESS_NAME
     - COMMAND
-    - MITRE_TECHNIQUE
+    # - MITRE_TECHNIQUE
   
   labels_to_ignore:
     - payment_status
     - metadata
     - annotation
-  
-  enable_generic_consolidation: true
+
+  enable_generic_consolidation: false
   min_score: 0.5
 
 langextract:
@@ -54,7 +54,7 @@ langextract:
         base_url: null
         api_key: null
       extract_params:
-        temperature: 0.7
+        temperature: 0
         use_schema_constraints: false
         fence_output: false
         max_char_buffer: 2000
@@ -165,12 +165,12 @@ langextract:
     ticket_number: INCIDENT_ID
 
     # ── Cybersecurity / CTI (Malware / Ransomware) ─────────────────
-    malware: MALWARE
-    malware_name: MALWARE
-    nome_malware: MALWARE
-    ransomware: RANSOMWARE
-    ransomware_name: RANSOMWARE
-    nome_ransomware: RANSOMWARE
+    # malware: MALWARE
+    # malware_name: MALWARE
+    # nome_malware: MALWARE
+    # ransomware: RANSOMWARE
+    # ransomware_name: RANSOMWARE
+    # nome_ransomware: RANSOMWARE
 
     # ── Cybersecurity / CTI (Internal server / Server interno) ───
     internal_server: INTERNAL_SERVER
@@ -182,35 +182,35 @@ langextract:
     hostname_interno: INTERNAL_SERVER
 
     # ── Cybersecurity / CTI (Threat actor / Attore minaccia) ────
-    threat_actor: THREAT_ACTOR
-    attore_minaccia: THREAT_ACTOR
-    actor: THREAT_ACTOR
-    attore: THREAT_ACTOR
-    threat_group: THREAT_GROUP
-    gruppo_apt: THREAT_GROUP
-    apt_group: THREAT_GROUP
-    apt: THREAT_GROUP
-    nation_state_actor: THREAT_GROUP
-    gruppo_minaccia: THREAT_GROUP
-    threat_actor_group: THREAT_GROUP
+    # threat_actor: THREAT_ACTOR
+    # attore_minaccia: THREAT_ACTOR
+    # actor: THREAT_ACTOR
+    # attore: THREAT_ACTOR
+    # threat_group: THREAT_GROUP
+    # gruppo_apt: THREAT_GROUP
+    # apt_group: THREAT_GROUP
+    # apt: THREAT_GROUP
+    # nation_state_actor: THREAT_GROUP
+    # gruppo_minaccia: THREAT_GROUP
+    # threat_actor_group: THREAT_GROUP
 
     # ── Cybersecurity / CTI (Vulnerability / Vulnerabilità) ──────
-    vulnerability: VULNERABILITY
-    vulnerabilita: VULNERABILITY
-    vulnerabilità: VULNERABILITY
-    vulnerability_name: VULNERABILITY
-    nome_vulnerabilita: VULNERABILITY
+    # vulnerability: VULNERABILITY
+    # vulnerabilita: VULNERABILITY
+    # vulnerabilità: VULNERABILITY
+    # vulnerability_name: VULNERABILITY
+    # nome_vulnerabilita: VULNERABILITY
 
     # ── Cybersecurity / CTI (CVE / Common Vulnerabilities and Exposures) ───
-    cve: CVE
-    cve_id: CVE
-    cve_identifier: CVE
+    # cve: CVE
+    # cve_id: CVE
+    # cve_identifier: CVE
 
     # ── Cybersecurity / CTI (CWE / Common Weakness Enumeration) ───
-    cwe: CWE
-    cwe_id: CWE
-    weakness: CWE
-    debolezza: CWE
+    # cwe: CWE
+    # cwe_id: CWE
+    # weakness: CWE
+    # debolezza: CWE
 
     # ── Cybersecurity / CTI (File hash / Hash file) ──────────────
     file_hash: HASH_FILE
@@ -298,11 +298,11 @@ langextract:
     comando_shell: COMMAND
 
     # ── Cybersecurity / CTI (MITRE ATT&CK / Tecnica MITRE) ──────
-    mitre_technique: MITRE_TECHNIQUE
-    tecnica_mitre: MITRE_TECHNIQUE
-    mitre_tactic: MITRE_TECHNIQUE
-    tattica_mitre: MITRE_TECHNIQUE
-    mitre_attack: MITRE_TECHNIQUE
-    ttp: MITRE_TECHNIQUE
-    attack_technique: MITRE_TECHNIQUE
-    tecnica_attacco: MITRE_TECHNIQUE
+    # mitre_technique: MITRE_TECHNIQUE
+    # tecnica_mitre: MITRE_TECHNIQUE
+    # mitre_tactic: MITRE_TECHNIQUE
+    # tattica_mitre: MITRE_TECHNIQUE
+    # mitre_attack: MITRE_TECHNIQUE
+    # ttp: MITRE_TECHNIQUE
+    # attack_technique: MITRE_TECHNIQUE
+    # tecnica_attacco: MITRE_TECHNIQUE
