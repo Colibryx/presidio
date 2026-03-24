@@ -303,14 +303,14 @@ recognizers:
 
   - name: PortNumberRecognizer
     type: predefined
-    enabled: true
+    enabled: false
     context: [port, port number, port number, porta, numero]
 
   # Ner recognizers
 
-  - name: SpacyRecognizer
-    type: predefined
-    enabled: false
+  # - name: SpacyRecognizer
+  #   type: predefined
+  #   enabled: true
 
   - name: BasicLangExtractRecognizer
     supported_languages:

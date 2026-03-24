@@ -16,7 +16,6 @@ lm_recognizer:
     - CREDIT_CARD
     - IP_ADDRESS
     - URL
-    # Le tue entity custom per cybersecurity
     - INCIDENT_ID
     - MALWARE
     - RANSOMWARE
@@ -55,13 +54,13 @@ langextract:
         base_url: null
         api_key: null
       extract_params:
-        temperature: 0
+        temperature: 0.7
         use_schema_constraints: false
         fence_output: false
-        max_char_buffer: 20000
+        max_char_buffer: 2000
       language_model_params:
         timeout: 240
-        # max_output_tokens: 10000
+        max_output_tokens: 10000
         # top_p: 0.95
         # top_k: 20
         # min_p: 0.0

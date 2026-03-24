@@ -15,7 +15,7 @@ class Replace(Operator):
         """:return: new_value."""
         new_val = params.get(self.NEW_VALUE)
         if not new_val:
-            return f"<{params.get('entity_type')}>"
+            return "{{" + str(params.get("entity_type")) + "}}"
         return new_val
 
     def validate(self, params: Dict = None) -> None:

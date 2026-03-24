@@ -348,3 +348,27 @@ examples:
         attributes:
           type: "mitre_technique"
           name: "OS Credential Dumping"
+
+  # 21) Same org and ransomware repeated — one extraction per occurrence (for redaction)
+  - text: "Acme S.p.A. was listed by LockBit; later, Acme S.p.A. denied payment. LockBit then updated LockBit's leak page."
+    extractions:
+      - extraction_class: "ORGANIZATION"
+        extraction_text: "Acme S.p.A."
+        attributes:
+          type: "company"
+      - extraction_class: "RANSOMWARE"
+        extraction_text: "LockBit"
+        attributes:
+          type: "ransomware_name"
+      - extraction_class: "ORGANIZATION"
+        extraction_text: "Acme S.p.A."
+        attributes:
+          type: "company"
+      - extraction_class: "RANSOMWARE"
+        extraction_text: "LockBit"
+        attributes:
+          type: "ransomware_name"
+      - extraction_class: "RANSOMWARE"
+        extraction_text: "LockBit"
+        attributes:
+          type: "ransomware_name"
