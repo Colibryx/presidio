@@ -1,5 +1,6 @@
 """REST API server for anonymizer."""
 
+import json
 import logging
 import os
 from logging.config import fileConfig
@@ -57,11 +58,51 @@ class Server:
             if AppEntitiesConvertor.check_custom_operator(anonymizers_config):
                 raise BadRequest("Custom type anonymizer is not supported")
 
+            text_raw = content.get("text", "")
+            analyzer_raw = content.get("analyzer_results")
+
+            if isinstance(text_raw, list):
+                if not isinstance(analyzer_raw, list):
+                    raise BadRequest(
+                        "When 'text' is a list (batch), 'analyzer_results' must "
+                        "be a list with one element per text — each element is the "
+                        "analyzer output list for that document."
+                    )
+                if len(text_raw) != len(analyzer_raw):
+                    raise BadRequest(
+                        "When using batch anonymization, 'text' and "
+                        f"'analyzer_results' must have the same length "
+                        f"({len(text_raw)} != {len(analyzer_raw)})."
+                    )
+                batch_payload = []
+                for i, piece in enumerate(text_raw):
+                    ar_piece = analyzer_raw[i]
+                    if ar_piece is None:
+                        ar_piece = []
+                    if not isinstance(ar_piece, list):
+                        raise BadRequest(
+                            "Each batch 'analyzer_results' entry must be a list "
+                            "of recognition objects (same shape as the analyzer "
+                            "returns for one text)."
+                        )
+                    analyzer_results = AppEntitiesConvertor.analyzer_results_from_json(
+                        ar_piece
+                    )
+                    engine_result = self.anonymizer.anonymize(
+                        text=str(piece),
+                        analyzer_results=analyzer_results,
+                        operators=anonymizers_config,
+                    )
+                    batch_payload.append(json.loads(engine_result.to_json()))
+                return Response(
+                    json.dumps(batch_payload), mimetype="application/json"
+                )
+
             analyzer_results = AppEntitiesConvertor.analyzer_results_from_json(
-                content.get("analyzer_results")
+                analyzer_raw
             )
             anoymizer_result = self.anonymizer.anonymize(
-                text=content.get("text", ""),
+                text=text_raw if isinstance(text_raw, str) else str(text_raw),
                 analyzer_results=analyzer_results,
                 operators=anonymizers_config,
             )
