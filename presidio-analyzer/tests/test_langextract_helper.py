@@ -1,12 +1,16 @@
 """Tests for llm_utils.langextract_helper module."""
 import pytest
 from unittest.mock import Mock, MagicMock, patch
+from presidio_analyzer import RecognizerResult
 from presidio_analyzer.llm_utils.langextract_helper import (
     extract_lm_config,
     get_supported_entities,
     create_reverse_entity_mapping,
     calculate_extraction_confidence,
     DEFAULT_ALIGNMENT_SCORES,
+    convert_langextract_batch_to_presidio_results,
+    convert_langextract_batch_to_presidio_results_aligned,
+    presidio_langextract_batch_document_id,
 )
 
 
@@ -261,6 +265,108 @@ class TestCalculateExtractionConfidence:
         result = calculate_extraction_confidence(extraction, alignment_scores=custom_scores)
 
         assert result == 0.85  # Default score
+
+
+class TestConvertLangextractBatchToPresidioResults:
+    """Tests for convert_langextract_batch_to_presidio_results."""
+
+    def test_when_batch_is_list_of_documents_then_returns_per_document_lists(self):
+        doc1_extraction = Mock()
+        doc1_extraction.extraction_class = "person"
+        doc1_extraction.char_interval = Mock(start_pos=0, end_pos=4)
+        doc1_extraction.alignment_status = "MATCH_EXACT"
+        doc1_extraction.attributes = {}
+
+        doc2_extraction = Mock()
+        doc2_extraction.extraction_class = "email"
+        doc2_extraction.char_interval = Mock(start_pos=1, end_pos=5)
+        doc2_extraction.alignment_status = "MATCH_EXACT"
+        doc2_extraction.attributes = {}
+
+        r1 = Mock()
+        r1.extractions = [doc1_extraction]
+        r2 = Mock()
+        r2.extractions = [doc2_extraction]
+
+        entity_mappings = {"person": "PERSON", "email": "EMAIL_ADDRESS"}
+        out = convert_langextract_batch_to_presidio_results(
+            langextract_batch_result=[r1, r2],
+            entity_mappings=entity_mappings,
+            supported_entities=["PERSON", "EMAIL_ADDRESS", "GENERIC_PII_ENTITY"],
+            enable_generic_consolidation=True,
+            recognizer_name="Test",
+        )
+
+        assert len(out) == 2
+        assert len(out[0]) == 1
+        assert isinstance(out[0][0], RecognizerResult)
+        assert out[0][0].entity_type == "PERSON"
+        assert len(out[1]) == 1
+        assert out[1][0].entity_type == "EMAIL_ADDRESS"
+
+    def test_when_batch_result_has_documents_attr_then_uses_it(self):
+        inner1 = Mock()
+        inner1.extractions = []
+        inner2 = Mock()
+        inner2.extractions = []
+        wrapper = Mock()
+        wrapper.documents = [inner1, inner2]
+
+        out = convert_langextract_batch_to_presidio_results(
+            langextract_batch_result=wrapper,
+            entity_mappings={"person": "PERSON"},
+            supported_entities=["PERSON", "GENERIC_PII_ENTITY"],
+            enable_generic_consolidation=True,
+            recognizer_name="Test",
+        )
+        assert out == [[], []]
+
+
+class TestConvertLangextractBatchAligned:
+    """Tests for convert_langextract_batch_to_presidio_results_aligned."""
+
+    @staticmethod
+    def _mock_doc(document_id, start_pos):
+        ext = Mock()
+        ext.extraction_class = "person"
+        ext.char_interval = Mock(start_pos=start_pos, end_pos=start_pos + 1)
+        ext.alignment_status = "MATCH_EXACT"
+        ext.attributes = {}
+        d = Mock()
+        d.document_id = document_id
+        d.extractions = [ext]
+        return d
+
+    def test_reorders_by_document_id_when_langextract_order_differs(self):
+        docs = [
+            self._mock_doc(presidio_langextract_batch_document_id(1), 99),
+            self._mock_doc(presidio_langextract_batch_document_id(0), 5),
+        ]
+        out = convert_langextract_batch_to_presidio_results_aligned(
+            docs,
+            num_input_documents=2,
+            entity_mappings={"person": "PERSON"},
+            supported_entities=["PERSON", "GENERIC_PII_ENTITY"],
+            enable_generic_consolidation=True,
+            recognizer_name="Test",
+        )
+        assert len(out) == 2
+        assert out[0][0].start == 5
+        assert out[1][0].start == 99
+
+    def test_pads_missing_documents_with_empty_lists(self):
+        d0 = self._mock_doc(presidio_langextract_batch_document_id(0), 1)
+        out = convert_langextract_batch_to_presidio_results_aligned(
+            [d0],
+            num_input_documents=2,
+            entity_mappings={"person": "PERSON"},
+            supported_entities=["PERSON", "GENERIC_PII_ENTITY"],
+            enable_generic_consolidation=True,
+            recognizer_name="Test",
+        )
+        assert len(out) == 2
+        assert len(out[0]) == 1
+        assert out[1] == []
 
 
 class TestDefaultAlignmentScores:

@@ -1,7 +1,7 @@
 import json
 import logging
 from collections import Counter
-from typing import List, Optional
+from typing import List, Optional, cast
 
 import regex as re
 
@@ -144,6 +144,161 @@ class AnalyzerEngine:
             supported_entities.extend(recognizer.get_supported_entities())
 
         return list(set(supported_entities))
+
+    def has_batch_capable_recognizers(
+        self,
+        language: str,
+        entities: Optional[List[str]] = None,
+        ad_hoc_recognizers: Optional[List[EntityRecognizer]] = None,
+    ) -> bool:
+        """Return True if batch analysis should use :meth:`analyze_batch` for this request.
+
+        This is not the same as implementing :meth:`~presidio_analyzer.lm_recognizer.LMRecognizer.analyze_batch`
+        (many LM recognizers inherit that method). The engine only switches to the
+        batch code path when at least one **selected** recognizer sets
+        ``supports_multi_text_llm_extraction = True`` (e.g. LangExtract). Custom
+        recognizers that perform a single multi-text LLM call must set that flag;
+        otherwise :class:`~presidio_analyzer.batch_analyzer_engine.BatchAnalyzerEngine`
+        keeps calling :meth:`analyze` once per text.
+        """
+        all_fields = not entities
+        recognizers = self.registry.get_recognizers(
+            language=language,
+            entities=entities,
+            all_fields=all_fields,
+            ad_hoc_recognizers=ad_hoc_recognizers,
+        )
+        return any(
+            getattr(r, "supports_multi_text_llm_extraction", False)
+            for r in recognizers
+        )
+
+    def analyze_batch(
+        self,
+        texts: List[str],
+        language: str,
+        entities: Optional[List[str]] = None,
+        correlation_id: Optional[str] = None,
+        score_threshold: Optional[float] = None,
+        return_decision_process: Optional[bool] = False,
+        ad_hoc_recognizers: Optional[List[EntityRecognizer]] = None,
+        context: Optional[List[str]] = None,
+        allow_list: Optional[List[str]] = None,
+        allow_list_match: Optional[str] = "exact",
+        regex_flags: Optional[int] = re.DOTALL | re.MULTILINE | re.IGNORECASE,
+        nlp_artifacts_list: Optional[List[NlpArtifacts]] = None,
+    ) -> List[List[RecognizerResult]]:
+        """
+        Analyze multiple texts in one engine pass.
+
+        Recognizers that define :meth:`~presidio_analyzer.lm_recognizer.LMRecognizer.analyze_batch`
+        are called once with all texts when this method runs; typically this is
+        only used from :class:`~presidio_analyzer.batch_analyzer_engine.BatchAnalyzerEngine`
+        after :meth:`has_batch_capable_recognizers` is true (LangExtract sets
+        ``supports_multi_text_llm_extraction``). Recognizers without
+        ``analyze_batch`` still run :meth:`~presidio_analyzer.entity_recognizer.EntityRecognizer.analyze`
+        per text.
+        """
+        if not texts:
+            return []
+
+        all_fields = not entities
+
+        recognizers = self.registry.get_recognizers(
+            language=language,
+            entities=entities,
+            all_fields=all_fields,
+            ad_hoc_recognizers=ad_hoc_recognizers,
+        )
+
+        if all_fields:
+            entities = self.get_supported_entities(language=language)
+
+        if not nlp_artifacts_list:
+            nlp_artifacts_list = [
+                self.nlp_engine.process_text(t, language) for t in texts
+            ]
+        elif len(nlp_artifacts_list) != len(texts):
+            raise ValueError(
+                "nlp_artifacts_list length must match texts length "
+                f"({len(nlp_artifacts_list)} != {len(texts)})"
+            )
+
+        if self.log_decision_process:
+            for i, na in enumerate(nlp_artifacts_list):
+                self.app_tracer.trace(
+                    correlation_id,
+                    f"batch nlp artifacts[{i}]:{na.to_json()}",
+                )
+
+        per_text_results: List[List[RecognizerResult]] = [[] for _ in texts]
+
+        for recognizer in recognizers:
+            if not recognizer.is_loaded:
+                recognizer.load()
+                recognizer.is_loaded = True
+
+            analyze_batch_fn = getattr(recognizer, "analyze_batch", None)
+            if callable(analyze_batch_fn):
+                batch_results = cast(
+                    List[List[RecognizerResult]],
+                    analyze_batch_fn(texts, entities, nlp_artifacts_list),
+                )
+                if len(batch_results) != len(texts):
+                    logger.warning(
+                        "analyze_batch returned %d result lists for %d texts; "
+                        "padding or truncating",
+                        len(batch_results),
+                        len(texts),
+                    )
+                    while len(batch_results) < len(texts):
+                        batch_results.append([])
+                    batch_results = batch_results[: len(texts)]
+                for i, chunk in enumerate(batch_results):
+                    if chunk:
+                        self.__add_recognizer_id_if_not_exists(chunk, recognizer)
+                        per_text_results[i].extend(chunk)
+            else:
+                for i, (text, nlp_a) in enumerate(zip(texts, nlp_artifacts_list)):
+                    current_results = recognizer.analyze(
+                        text=text, entities=entities, nlp_artifacts=nlp_a
+                    )
+                    if current_results:
+                        self.__add_recognizer_id_if_not_exists(
+                            current_results, recognizer
+                        )
+                        per_text_results[i].extend(current_results)
+
+        list_results: List[List[RecognizerResult]] = []
+        for i, text in enumerate(texts):
+            results = self._enhance_using_context(
+                text,
+                per_text_results[i],
+                nlp_artifacts_list[i],
+                recognizers,
+                context,
+            )
+
+            if self.log_decision_process:
+                self.app_tracer.trace(
+                    correlation_id,
+                    json.dumps([str(r.to_dict()) for r in results]),
+                )
+
+            results = EntityRecognizer.remove_duplicates(results)
+            results = self.__remove_low_scores(results, score_threshold)
+
+            if allow_list:
+                results = self._remove_allow_list(
+                    results, allow_list, text, regex_flags, allow_list_match
+                )
+
+            if not return_decision_process:
+                results = self.__remove_decision_process(results)
+
+            list_results.append(results)
+
+        return list_results
 
     def analyze(
         self,

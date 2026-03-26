@@ -19,14 +19,18 @@ from .entity_mapper import (
 )
 from .examples_loader import convert_to_langextract_format, load_yaml_examples
 from .langextract_helper import (
+    LANGEXTRACT_PRESIDIO_BATCH_DOC_ID_PREFIX,
     calculate_extraction_confidence,
     check_langextract_available,
+    convert_langextract_batch_to_presidio_results,
+    convert_langextract_batch_to_presidio_results_aligned,
     convert_langextract_to_presidio_results,
     create_reverse_entity_mapping,
     extract_lm_config,
     get_supported_entities,
     lx,
     lx_factory,
+    presidio_langextract_batch_document_id,
 )
 from .prompt_loader import load_file_from_conf, load_prompt_file, render_jinja_template
 
@@ -49,6 +53,10 @@ __all__ = [
     "calculate_extraction_confidence",
     "check_langextract_available",
     "convert_langextract_to_presidio_results",
+    "convert_langextract_batch_to_presidio_results",
+    "convert_langextract_batch_to_presidio_results_aligned",
+    "LANGEXTRACT_PRESIDIO_BATCH_DOC_ID_PREFIX",
+    "presidio_langextract_batch_document_id",
     "create_reverse_entity_mapping",
     "extract_lm_config",
     "get_supported_entities",

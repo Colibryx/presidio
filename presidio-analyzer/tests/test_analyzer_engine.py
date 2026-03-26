@@ -19,8 +19,9 @@ from presidio_analyzer.nlp_engine import (
     SpacyNlpEngine,
 )
 from presidio_analyzer.recognizer_registry import (
-    RecognizerRegistryProvider
+    RecognizerRegistryProvider,
 )
+from presidio_analyzer.lm_recognizer import LMRecognizer
 
 # noqa: F401
 from tests import assert_result
@@ -935,3 +936,61 @@ def test_when_multiple_nameless_recognizers_context_is_correct(spacy_nlp_engine)
 
     for recognizer_result in recognizer_results:
         assert recognizer_result.score > 0.3
+
+
+def test_analyze_batch_runs_analyze_batch_once_and_analyze_per_text_for_other_recognizers():
+    """Batch LM path + per-text path both contribute when registry is mixed."""
+
+    class BatchedLM(LMRecognizer):
+        supports_multi_text_llm_extraction = True
+
+        def __init__(self):
+            super().__init__(supported_entities=["PERSON"], name="BatchedLM")
+            self.batch_calls = 0
+
+        def _call_llm(self, text, entities, **kwargs):
+            return []
+
+        def _call_llm_batch(self, texts, entities, **kwargs):
+            self.batch_calls += 1
+            return [
+                [
+                    RecognizerResult(
+                        entity_type="PERSON", start=0, end=1, score=0.9
+                    )
+                ]
+                for _ in texts
+            ]
+
+    class PerTextRecognizer(EntityRecognizer):
+        def __init__(self):
+            super().__init__(supported_entities=["PERSON"], name="PerText")
+            self.analyze_calls = 0
+
+        def load(self) -> None:
+            pass
+
+        def analyze(self, text, entities, nlp_artifacts):
+            self.analyze_calls += 1
+            return []
+
+    batch_rec = BatchedLM()
+    per_rec = PerTextRecognizer()
+    registry = RecognizerRegistry(
+        recognizers=[batch_rec, per_rec],
+        supported_languages=["en"],
+    )
+    nlp = NlpEngineMock()
+    engine = AnalyzerEngine(registry=registry, nlp_engine=nlp)
+    artifacts = nlp.process_text("a", "en")
+    results = engine.analyze_batch(
+        texts=["a", "b"],
+        language="en",
+        nlp_artifacts_list=[artifacts, artifacts],
+        entities=["PERSON"],
+    )
+
+    assert batch_rec.batch_calls == 1
+    assert per_rec.analyze_calls == 2
+    assert len(results) == 2
+    assert all(len(row) == 1 for row in results)

@@ -1,10 +1,32 @@
+import yaml
 import pytest
-from presidio_analyzer import RecognizerResult, BatchAnalyzerEngine, DictAnalyzerResult
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
+
+from presidio_analyzer import (
+    AnalyzerEngine,
+    RecognizerRegistry,
+    RecognizerResult,
+    BatchAnalyzerEngine,
+    DictAnalyzerResult,
+)
+from tests.mocks.nlp_engine_mock import NlpEngineMock
+from presidio_analyzer.llm_utils.langextract_helper import (
+    presidio_langextract_batch_document_id,
+)
+from tests.test_basic_langextract_recognizer import create_test_config
 
 
 @pytest.fixture(scope="module")
 def batch_analyzer_engine_simple(analyzer_engine_simple):
     return BatchAnalyzerEngine(analyzer_engine=analyzer_engine_simple)
+
+
+def test_has_batch_capable_recognizers_false_when_no_langextract(
+    mock_registry, mock_nlp_engine
+):
+    engine = AnalyzerEngine(registry=mock_registry, nlp_engine=mock_nlp_engine)
+    assert engine.has_batch_capable_recognizers(language="en") is False
 
 
 # fmt: off
@@ -288,3 +310,69 @@ def test_batch_analyze_iterator_returns_list_of_recognizer_results(
     assert len(results) == len(expected_output)
     for result, expected_result in zip(results, expected_output):
         assert result == expected_result
+
+
+def test_analyze_iterator_uses_single_langextract_call_for_multiple_texts(tmp_path):
+    """BatchAnalyzerEngine passes all texts in one lx.extract when using LangExtract."""
+    extract_calls = []
+
+    def capture_extract(**kwargs):
+        extract_calls.append(dict(kwargs))
+        docs = kwargs.get("text_or_documents")
+        if isinstance(docs, str):
+            docs = [docs]
+        return [Mock(extractions=[]) for _ in docs]
+
+    fake_data = SimpleNamespace(
+        Extraction=lambda **kwargs: SimpleNamespace(**kwargs),
+        ExampleData=lambda **kwargs: SimpleNamespace(**kwargs),
+        Document=lambda text, document_id=None: SimpleNamespace(
+            text=text, document_id=document_id
+        ),
+    )
+    fake_lx = SimpleNamespace(
+        extract=capture_extract,
+        providers=SimpleNamespace(
+            load_builtins_once=lambda: None,
+            load_plugins_once=lambda: None,
+        ),
+        data=fake_data,
+    )
+    fake_factory = SimpleNamespace(ModelConfig=lambda **kw: Mock())
+
+    config = create_test_config()
+    config_file = tmp_path / "lx_batch.yaml"
+    with open(config_file, "w") as f:
+        yaml.dump(config, f)
+
+    with patch(
+        "presidio_analyzer.llm_utils.langextract_helper.lx", fake_lx
+    ), patch(
+        "presidio_analyzer.llm_utils.langextract_helper.lx_factory", fake_factory
+    ), patch(
+        "presidio_analyzer.llm_utils.examples_loader.lx", fake_lx
+    ), patch(
+        "presidio_analyzer.predefined_recognizers.third_party.langextract_recognizer.lx",
+        fake_lx,
+    ), patch(
+        "presidio_analyzer.predefined_recognizers.third_party.basic_langextract_recognizer.lx_factory",
+        fake_factory,
+    ):
+        from presidio_analyzer.predefined_recognizers.third_party.basic_langextract_recognizer import (
+            BasicLangExtractRecognizer,
+        )
+
+        recognizer = BasicLangExtractRecognizer(config_path=str(config_file))
+        registry = RecognizerRegistry(
+            recognizers=[recognizer], supported_languages=["en"]
+        )
+        engine = AnalyzerEngine(registry=registry, nlp_engine=NlpEngineMock())
+        batch_engine = BatchAnalyzerEngine(analyzer_engine=engine)
+
+        batch_engine.analyze_iterator(["hello", "world"], language="en")
+
+    assert len(extract_calls) == 1
+    docs = extract_calls[0]["text_or_documents"]
+    assert len(docs) == 2
+    assert docs[0].text == "hello" and docs[0].document_id == presidio_langextract_batch_document_id(0)
+    assert docs[1].text == "world" and docs[1].document_id == presidio_langextract_batch_document_id(1)

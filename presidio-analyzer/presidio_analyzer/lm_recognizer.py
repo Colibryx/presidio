@@ -25,7 +25,19 @@ class LMRecognizer(RemoteRecognizer, ABC):
 
     Provides common functionality for LLM-based entity detection.
     Subclasses implement _call_llm() for specific LLM providers.
+
+    All subclasses inherit :meth:`analyze_batch`; to use a single batched LLM
+    request when analyzing many texts via :class:`~presidio_analyzer.batch_analyzer_engine.BatchAnalyzerEngine`,
+    set :attr:`supports_multi_text_llm_extraction` to ``True`` and override
+    :meth:`_call_llm_batch` (the default loops :meth:`_call_llm` per text).
     """
+
+    #: When True, :class:`~presidio_analyzer.batch_analyzer_engine.BatchAnalyzerEngine`
+    #: calls :meth:`analyze_batch` (one multi-text pass) instead of :meth:`analyze`
+    #: per text for this recognizer. LangExtract sets this to ``True``; other LMs
+    #: leave it ``False`` unless they override :meth:`_call_llm_batch` with a true
+    #: batch API.
+    supports_multi_text_llm_extraction: bool = False
 
     def __init__(
         self,
@@ -88,6 +100,19 @@ class LMRecognizer(RemoteRecognizer, ABC):
         """
         ...
 
+    def _call_llm_batch(
+        self,
+        texts: List[str],
+        entities: List[str],
+        **kwargs,
+    ) -> List[List[RecognizerResult]]:
+        """Call LLM for multiple texts.
+
+        Default implementation invokes :meth:`_call_llm` once per text.
+        LangExtract-based recognizers override this to use a single batched call.
+        """
+        return [self._call_llm(t, entities, **kwargs) for t in texts]
+
     def analyze(
         self,
         text: str,
@@ -124,6 +149,61 @@ class LMRecognizer(RemoteRecognizer, ABC):
             )
 
         return filtered_results
+
+    def analyze_batch(
+        self,
+        texts: List[str],
+        entities: Optional[List[str]] = None,
+        nlp_artifacts: Optional[List["NlpArtifacts"]] = None,
+    ) -> List[List[RecognizerResult]]:
+        """Analyze multiple texts; may use a single batched LLM call if supported."""
+        del nlp_artifacts  # LM path does not use NLP artifacts
+
+        if not texts:
+            return []
+
+        if entities is None:
+            requested_entities = self.supported_entities
+        else:
+            requested_entities = [e for e in entities if e in self.supported_entities]
+
+        if not requested_entities:
+            logger.debug(
+                "No requested entities (%s) match supported entities (%s)",
+                entities,
+                self.supported_entities,
+            )
+            return [[] for _ in texts]
+
+        # Preserve alignment with input indices; skip empty strings for the LLM call
+        out: List[List[RecognizerResult]] = [[] for _ in texts]
+        nonempty_indices: List[int] = []
+        nonempty_texts: List[str] = []
+        for i, t in enumerate(texts):
+            if t and str(t).strip():
+                nonempty_indices.append(i)
+                nonempty_texts.append(str(t))
+
+        if not nonempty_texts:
+            return out
+
+        batch_raw = self._call_llm_batch(nonempty_texts, requested_entities)
+        if len(batch_raw) != len(nonempty_texts):
+            logger.warning(
+                "_call_llm_batch returned %d result lists for %d non-empty texts",
+                len(batch_raw),
+                len(nonempty_texts),
+            )
+            while len(batch_raw) < len(nonempty_texts):
+                batch_raw.append([])
+            batch_raw = batch_raw[: len(nonempty_texts)]
+
+        for j, doc_idx in enumerate(nonempty_indices):
+            out[doc_idx] = self._filter_and_process_results(
+                batch_raw[j], requested_entities
+            )
+
+        return out
 
     def _filter_and_process_results(
         self,

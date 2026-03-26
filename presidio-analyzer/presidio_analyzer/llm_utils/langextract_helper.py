@@ -72,6 +72,10 @@ __all__ = [
     "create_reverse_entity_mapping",
     "calculate_extraction_confidence",
     "convert_langextract_to_presidio_results",
+    "convert_langextract_batch_to_presidio_results",
+    "convert_langextract_batch_to_presidio_results_aligned",
+    "LANGEXTRACT_PRESIDIO_BATCH_DOC_ID_PREFIX",
+    "presidio_langextract_batch_document_id",
 ]
 
 
@@ -91,6 +95,15 @@ DEFAULT_ALIGNMENT_SCORES = {
     "MATCH_LESSER": 0.70,
     "NOT_ALIGNED": 0.60,
 }
+
+# Must match ``document_id`` passed to ``langextract.data.Document`` in batch mode
+# so outputs can be re-mapped to Presidio input order.
+LANGEXTRACT_PRESIDIO_BATCH_DOC_ID_PREFIX = "presidio_batch_"
+
+
+def presidio_langextract_batch_document_id(index: int) -> str:
+    """Stable ``document_id`` for the *i*-th string in a Presidio batch request."""
+    return f"{LANGEXTRACT_PRESIDIO_BATCH_DOC_ID_PREFIX}{index}"
 
 
 def extract_lm_config(config: Dict) -> Dict:
@@ -158,6 +171,139 @@ def calculate_extraction_confidence(
             return score
 
     return default_score
+
+
+def _document_results_from_langextract_batch(langextract_batch_result) -> List:
+    """Normalize LangExtract batch output to a list of per-document result objects.
+
+    LangExtract may return a list of annotated documents or a wrapper with a
+    ``documents`` / ``annotated_documents`` / ``results`` attribute.
+    """
+    if langextract_batch_result is None:
+        return []
+    if isinstance(langextract_batch_result, (list, tuple)):
+        return list(langextract_batch_result)
+    for attr in ("documents", "annotated_documents", "results"):
+        if hasattr(langextract_batch_result, attr):
+            docs = getattr(langextract_batch_result, attr)
+            if docs is not None:
+                return list(docs)
+    # Single-document shape: one result object for the whole batch call
+    return [langextract_batch_result]
+
+
+def convert_langextract_batch_to_presidio_results(
+    langextract_batch_result,
+    entity_mappings: Dict,
+    supported_entities: List[str],
+    enable_generic_consolidation: bool,
+    recognizer_name: str,
+    alignment_scores: Optional[Dict[str, float]] = None,
+) -> List[List[RecognizerResult]]:
+    """Convert LangExtract multi-document extraction output to Presidio results.
+
+    Each item in the returned list corresponds to one input document, in order.
+
+    :param langextract_batch_result: Output from ``lx.extract`` when multiple
+        documents were passed via ``text_or_documents``.
+    :return: List of ``RecognizerResult`` lists, one per document.
+    """
+    doc_results = _document_results_from_langextract_batch(langextract_batch_result)
+    return [
+        convert_langextract_to_presidio_results(
+            doc,
+            entity_mappings=entity_mappings,
+            supported_entities=supported_entities,
+            enable_generic_consolidation=enable_generic_consolidation,
+            recognizer_name=recognizer_name,
+            alignment_scores=alignment_scores,
+        )
+        for doc in doc_results
+    ]
+
+
+def convert_langextract_batch_to_presidio_results_aligned(
+    langextract_batch_result,
+    num_input_documents: int,
+    entity_mappings: Dict,
+    supported_entities: List[str],
+    enable_generic_consolidation: bool,
+    recognizer_name: str,
+    alignment_scores: Optional[Dict[str, float]] = None,
+    batch_document_id_prefix: str = LANGEXTRACT_PRESIDIO_BATCH_DOC_ID_PREFIX,
+) -> List[List[RecognizerResult]]:
+    """Convert LangExtract multi-document output to Presidio results per input text.
+
+    When each returned annotated document has a unique ``document_id`` matching
+    ``{batch_document_id_prefix}{i}`` (as produced by
+    :func:`presidio_langextract_batch_document_id`), results are ordered by *i*
+    even if LangExtract returns documents in a different order. Otherwise
+    falls back to positional alignment of the normalized document list (same
+    behavior as :func:`convert_langextract_batch_to_presidio_results` plus
+    padding/truncation).
+
+    :param num_input_documents: Number of input texts Presidio sent in the batch.
+    :return: ``num_input_documents`` lists of :class:`~presidio_analyzer.RecognizerResult`.
+    """
+    expected_ids = [
+        f"{batch_document_id_prefix}{i}" for i in range(num_input_documents)
+    ]
+
+    def _pad_to_n(rows: List[List[RecognizerResult]]) -> List[List[RecognizerResult]]:
+        while len(rows) < num_input_documents:
+            rows.append([])
+        return rows[:num_input_documents]
+
+    def _positional() -> List[List[RecognizerResult]]:
+        return _pad_to_n(
+            convert_langextract_batch_to_presidio_results(
+                langextract_batch_result=langextract_batch_result,
+                entity_mappings=entity_mappings,
+                supported_entities=supported_entities,
+                enable_generic_consolidation=enable_generic_consolidation,
+                recognizer_name=recognizer_name,
+                alignment_scores=alignment_scores,
+            )
+        )
+
+    doc_results = _document_results_from_langextract_batch(langextract_batch_result)
+
+    if not doc_results:
+        return [[] for _ in range(num_input_documents)]
+
+    by_id: Dict[str, List[RecognizerResult]] = {}
+    for doc in doc_results:
+        rid = getattr(doc, "document_id", None)
+        if rid is None:
+            logger.debug(
+                "LangExtract batch output missing document_id on a document; "
+                "using positional alignment to Presidio input order"
+            )
+            return _positional()
+        if rid in by_id:
+            logger.warning(
+                "Duplicate document_id %r in LangExtract batch output; "
+                "using positional alignment",
+                rid,
+            )
+            return _positional()
+        by_id[rid] = convert_langextract_to_presidio_results(
+            langextract_result=doc,
+            entity_mappings=entity_mappings,
+            supported_entities=supported_entities,
+            enable_generic_consolidation=enable_generic_consolidation,
+            recognizer_name=recognizer_name,
+            alignment_scores=alignment_scores,
+        )
+
+    unknown = set(by_id.keys()) - set(expected_ids)
+    if unknown:
+        logger.debug(
+            "LangExtract returned document_id(s) not in Presidio batch ids: %s",
+            unknown,
+        )
+
+    return [by_id.get(eid, []) for eid in expected_ids]
 
 
 def convert_langextract_to_presidio_results(

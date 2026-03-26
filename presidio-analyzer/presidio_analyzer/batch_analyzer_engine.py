@@ -55,12 +55,31 @@ class BatchAnalyzerEngine:
             )
         )
 
-        list_results = []
-        for text, nlp_artifacts in nlp_artifacts_batch:
-            results = self.analyzer_engine.analyze(
-                text=str(text), nlp_artifacts=nlp_artifacts, language=language, **kwargs
+        paired = list(nlp_artifacts_batch)
+        if not paired:
+            return []
+
+        text_list = [str(t) for t, _ in paired]
+        nlp_list = [na for _, na in paired]
+
+        use_batch_llm = self.analyzer_engine.has_batch_capable_recognizers(
+            language=language,
+            entities=kwargs.get("entities"),
+            ad_hoc_recognizers=kwargs.get("ad_hoc_recognizers"),
+        )
+        if use_batch_llm:
+            return self.analyzer_engine.analyze_batch(
+                texts=text_list,
+                language=language,
+                nlp_artifacts_list=nlp_list,
+                **kwargs,
             )
 
+        list_results = []
+        for text, nlp_artifacts in zip(text_list, nlp_list):
+            results = self.analyzer_engine.analyze(
+                text=text, nlp_artifacts=nlp_artifacts, language=language, **kwargs
+            )
             list_results.append(results)
 
         return list_results

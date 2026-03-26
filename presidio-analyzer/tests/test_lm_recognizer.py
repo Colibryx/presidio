@@ -228,7 +228,7 @@ class TestLMRecognizerFiltering:
         """Test get_supported_entities returns the correct list."""
         recognizer = ConcreteLMRecognizer()
         entities = recognizer.get_supported_entities()
-        
+
         assert "PERSON" in entities
         assert "EMAIL_ADDRESS" in entities
         assert "GENERIC_PII_ENTITY" in entities  # Added by default
@@ -237,7 +237,66 @@ class TestLMRecognizerFiltering:
         """Test GENERIC_PII_ENTITY not added when consolidation disabled."""
         recognizer = ConcreteLMRecognizer(enable_generic_consolidation=False)
         entities = recognizer.get_supported_entities()
-        
+
         assert "PERSON" in entities
         assert "EMAIL_ADDRESS" in entities
         assert "GENERIC_PII_ENTITY" not in entities
+
+
+class TestLMRecognizerAnalyzeBatch:
+    """Tests for LMRecognizer.analyze_batch."""
+
+    def test_analyze_batch_delegates_to_call_llm_batch(self):
+        """Default _call_llm_batch loops _call_llm once per non-empty text."""
+        recognizer = ConcreteLMRecognizer()
+        recognizer.mock_entities = [
+            RecognizerResult(entity_type="PERSON", start=0, end=2, score=0.9),
+        ]
+        out = recognizer.analyze_batch(["ab", "cd"], entities=["PERSON"])
+        assert len(out) == 2
+        assert len(out[0]) == 1
+        assert len(out[1]) == 1
+
+    def test_analyze_batch_preserves_empty_strings_as_empty_results(self):
+        recognizer = ConcreteLMRecognizer()
+        recognizer.mock_entities = [
+            RecognizerResult(entity_type="PERSON", start=0, end=1, score=0.9),
+        ]
+        out = recognizer.analyze_batch(["", "  ", "x"], entities=["PERSON"])
+        assert out[0] == [] and out[1] == []
+        assert len(out[2]) == 1
+
+    def test_analyze_batch_when_no_matching_entities_then_empty_per_text(self):
+        recognizer = ConcreteLMRecognizer()
+        out = recognizer.analyze_batch(["a", "b"], entities=["CREDIT_CARD"])
+        assert out == [[], []]
+
+
+class TestLMRecognizerBatchOptional:
+    """Batched _call_llm_batch override."""
+
+    def test_when_subclass_overrides_call_llm_batch_then_single_invocation(self):
+        class BatchedLM(LMRecognizer):
+            def __init__(self):
+                super().__init__(
+                    supported_entities=["PERSON"],
+                    name="Batched",
+                )
+                self.batch_calls = 0
+
+            def _call_llm(self, text, entities, **kwargs):
+                raise AssertionError("should not be used in this test")
+
+            def _call_llm_batch(self, texts, entities, **kwargs):
+                self.batch_calls += 1
+                return [
+                    [RecognizerResult(entity_type="PERSON", start=0, end=1, score=0.9)]
+                    for _ in texts
+                ]
+
+        r = BatchedLM()
+        r.supports_multi_text_llm_extraction = True  # noqa: for parity with opt-in LMs
+        out = r.analyze_batch(["hello", "world"])
+        assert r.batch_calls == 1
+        assert len(out) == 2
+        assert all(len(x) == 1 for x in out)
