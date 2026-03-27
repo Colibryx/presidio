@@ -452,3 +452,21 @@ class TestPatchOpenaiWithLangfuse:
             _patch_openai_with_langfuse()
 
             assert mock_provider_module.openai is original_openai
+
+    @patch.dict(os.environ, {"LANGFUSE_SECRET_KEY": "sk-test"}, clear=True)
+    @patch("presidio_analyzer.llm_utils.langextract_helper.LANGFUSE_AVAILABLE", True)
+    def test_when_langfuse_public_key_missing_then_does_not_patch(self):
+        """Test that no patching occurs when LANGFUSE_PUBLIC_KEY is missing."""
+        mock_provider_module = MagicMock()
+        original_openai = mock_provider_module.openai
+
+        with patch.dict(
+            "sys.modules",
+            {"langextract.providers.openai": mock_provider_module},
+        ):
+            from presidio_analyzer.llm_utils.langextract_helper import (
+                _patch_openai_with_langfuse,
+            )
+            _patch_openai_with_langfuse()
+
+            assert mock_provider_module.openai is original_openai

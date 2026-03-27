@@ -2,6 +2,7 @@
 
 import logging
 import os
+import sys
 from typing import Dict, List, Optional
 
 from presidio_analyzer import AnalysisExplanation, RecognizerResult
@@ -77,7 +78,6 @@ def _patch_openai_with_langfuse():
         return
 
     try:
-        import sys
         provider_module = sys.modules.get("langextract.providers.openai")
         if provider_module is not None:
             provider_module.openai = _langfuse_openai
