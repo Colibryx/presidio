@@ -1,11 +1,19 @@
 """LangExtract helper utilities."""
 
 import logging
+import os
 from typing import Dict, List, Optional
 
 from presidio_analyzer import AnalysisExplanation, RecognizerResult
 
 logger = logging.getLogger("presidio-analyzer")
+
+try:
+    from langfuse import openai as _langfuse_openai
+    LANGFUSE_AVAILABLE = True
+except ImportError:
+    _langfuse_openai = None
+    LANGFUSE_AVAILABLE = False
 
 
 def _patch_openai_extra_body():
@@ -46,6 +54,43 @@ def _patch_openai_extra_body():
         )
 
 
+def _patch_openai_with_langfuse():
+    """Replace openai module in langextract's OpenAI provider with Langfuse wrapper.
+
+    When Langfuse is installed and configured (LANGFUSE_PUBLIC_KEY and
+    LANGFUSE_SECRET_KEY environment variables are set), this replaces the
+    ``openai`` module reference used by langextract's OpenAI provider with
+    ``langfuse.openai``. This causes all OpenAI/AzureOpenAI clients created
+    by langextract to be automatically traced by Langfuse.
+
+    If Langfuse is not installed or not configured, this is a no-op.
+    """
+    if not LANGFUSE_AVAILABLE:
+        return
+    if not os.environ.get("LANGFUSE_PUBLIC_KEY") or not os.environ.get(
+        "LANGFUSE_SECRET_KEY"
+    ):
+        logger.debug(
+            "Langfuse is installed but LANGFUSE_PUBLIC_KEY and/or "
+            "LANGFUSE_SECRET_KEY are not set — skipping OpenAI patching"
+        )
+        return
+
+    try:
+        import sys
+        provider_module = sys.modules.get("langextract.providers.openai")
+        if provider_module is not None:
+            provider_module.openai = _langfuse_openai
+            logger.info("Patched langextract OpenAI provider with Langfuse tracing")
+        else:
+            logger.debug(
+                "langextract.providers.openai not loaded — "
+                "Langfuse patching skipped"
+            )
+    except Exception as e:
+        logger.debug("Could not patch langextract with Langfuse: %s", e)
+
+
 try:
     import langextract as lx
     import langextract.factory as lx_factory
@@ -59,6 +104,7 @@ try:
     # Patch OpenAI provider to pass extra_body to the API (LangExtract omits it).
     # Required for provider-specific params like Qwen's enable_thinking.
     _patch_openai_extra_body()
+    _patch_openai_with_langfuse()
 except ImportError:
     lx = None
     lx_factory = None
