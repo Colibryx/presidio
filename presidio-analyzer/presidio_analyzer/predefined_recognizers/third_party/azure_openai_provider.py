@@ -6,14 +6,40 @@ from typing import Optional
 
 try:
     import langextract as lx
-    import openai
     from langextract.providers.openai import OpenAILanguageModel
     LANGEXTRACT_OPENAI_AVAILABLE = True
+
+    def _get_openai_module():
+        """Return the openai module, wrapped by Langfuse if available and configured."""
+        _langfuse_active = (
+            os.environ.get("LANGFUSE_PUBLIC_KEY")
+            and os.environ.get("LANGFUSE_SECRET_KEY")
+        )
+        if _langfuse_active:
+            try:
+                from langfuse import openai as _langfuse_openai
+                logger.info(
+                    "Azure OpenAI provider using Langfuse-wrapped openai module"
+                )
+                return _langfuse_openai
+            except ImportError:
+                pass
+        try:
+            import openai
+            return openai
+        except ImportError:
+            return None
+
+    openai = _get_openai_module()
+
 except ImportError:  # pragma: no cover
     LANGEXTRACT_OPENAI_AVAILABLE = False
     lx = None
     OpenAILanguageModel = None
     openai = None
+
+    def _get_openai_module():
+        return None
 
 try:
     from presidio_analyzer.llm_utils.azure_auth_helper import (
