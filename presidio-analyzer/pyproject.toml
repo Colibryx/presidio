@@ -68,6 +68,9 @@ langextract = [
     "more-itertools (>=10.0.0)",
     "jinja2 (>=3.0.0)",
 ]
+langfuse = [
+    "langfuse (>=2.0.0)",
+]
 
 [tool.poetry.group.dev.dependencies]
 pip = "*"
