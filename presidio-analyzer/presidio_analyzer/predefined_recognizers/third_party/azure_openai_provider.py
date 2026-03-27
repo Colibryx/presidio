@@ -4,6 +4,8 @@ import logging
 import os
 from typing import Optional
 
+logger = logging.getLogger("presidio-analyzer")
+
 try:
     import langextract as lx
     from langextract.providers.openai import OpenAILanguageModel
@@ -51,8 +53,6 @@ except ImportError:  # pragma: no cover
     AZURE_IDENTITY_AVAILABLE = False
     get_azure_credential = None
     get_bearer_token_provider_for_scope = None
-
-logger = logging.getLogger("presidio-analyzer")
 
 
 if LANGEXTRACT_OPENAI_AVAILABLE:
