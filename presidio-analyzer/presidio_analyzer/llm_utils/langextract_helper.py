@@ -11,6 +11,7 @@ logger = logging.getLogger("presidio-analyzer")
 
 try:
     from langfuse import openai as _langfuse_openai
+
     LANGFUSE_AVAILABLE = True
 except ImportError:
     _langfuse_openai = None
@@ -50,9 +51,7 @@ def _patch_openai_extra_body():
 
         OpenAILanguageModel._process_single_prompt = _patched_process_with_extra_body
     except Exception as e:
-        logger.debug(
-            "Could not patch LangExtract OpenAI provider for extra_body: %s", e
-        )
+        logger.debug("Could not patch LangExtract OpenAI provider for extra_body: %s", e)
 
 
 def _patch_openai_with_langfuse():
@@ -68,9 +67,7 @@ def _patch_openai_with_langfuse():
     """
     if not LANGFUSE_AVAILABLE:
         return
-    if not os.environ.get("LANGFUSE_PUBLIC_KEY") or not os.environ.get(
-        "LANGFUSE_SECRET_KEY"
-    ):
+    if not os.environ.get("LANGFUSE_PUBLIC_KEY") or not os.environ.get("LANGFUSE_SECRET_KEY"):
         logger.debug(
             "Langfuse is installed but LANGFUSE_PUBLIC_KEY and/or "
             "LANGFUSE_SECRET_KEY are not set — skipping OpenAI patching"
@@ -83,10 +80,7 @@ def _patch_openai_with_langfuse():
             provider_module.openai = _langfuse_openai
             logger.info("Patched langextract OpenAI provider with Langfuse tracing")
         else:
-            logger.debug(
-                "langextract.providers.openai not loaded — "
-                "Langfuse patching skipped"
-            )
+            logger.debug("langextract.providers.openai not loaded — Langfuse patching skipped")
     except Exception as e:
         logger.debug("Could not patch langextract with Langfuse: %s", e)
 
@@ -128,10 +122,7 @@ __all__ = [
 def check_langextract_available():
     """Check if langextract is available and raise error if not."""
     if not lx:
-        raise ImportError(
-            "LangExtract is not installed. "
-            "Install it with: poetry install --extras langextract"
-        )
+        raise ImportError("LangExtract is not installed. Install it with: poetry install --extras langextract")
 
 
 # Default alignment score mappings for LangExtract extractions
@@ -165,24 +156,18 @@ def extract_lm_config(config: Dict) -> Dict:
         "supported_entities": lm_config_section.get("supported_entities"),
         "min_score": lm_config_section.get("min_score", 0.5),
         "labels_to_ignore": lm_config_section.get("labels_to_ignore", []),
-        "enable_generic_consolidation": lm_config_section.get(
-            "enable_generic_consolidation", True
-        ),
+        "enable_generic_consolidation": lm_config_section.get("enable_generic_consolidation", True),
     }
 
 
-def get_supported_entities(
-    lm_config: Dict, langextract_config: Dict
-) -> Optional[List[str]]:
+def get_supported_entities(lm_config: Dict, langextract_config: Dict) -> Optional[List[str]]:
     """Get supported entities list, checking LM config first then LangExtract config.
 
     :param lm_config: LM recognizer configuration dictionary.
     :param langextract_config: LangExtract configuration dictionary.
     :return: List of supported entity types, or None if not specified.
     """
-    return lm_config.get("supported_entities") or langextract_config.get(
-        "supported_entities"
-    )
+    return lm_config.get("supported_entities") or langextract_config.get("supported_entities")
 
 
 def create_reverse_entity_mapping(entity_mappings: Dict) -> Dict:
@@ -194,9 +179,7 @@ def create_reverse_entity_mapping(entity_mappings: Dict) -> Dict:
     return {v: k for k, v in entity_mappings.items()}
 
 
-def calculate_extraction_confidence(
-    extraction, alignment_scores: Optional[Dict[str, float]] = None
-) -> float:
+def calculate_extraction_confidence(extraction, alignment_scores: Optional[Dict[str, float]] = None) -> float:
     """Calculate confidence score based on extraction alignment status.
 
     :param extraction: LangExtract extraction object with optional alignment_status.
@@ -291,9 +274,7 @@ def convert_langextract_batch_to_presidio_results_aligned(
     :param num_input_documents: Number of input texts Presidio sent in the batch.
     :return: ``num_input_documents`` lists of :class:`~presidio_analyzer.RecognizerResult`.
     """
-    expected_ids = [
-        f"{batch_document_id_prefix}{i}" for i in range(num_input_documents)
-    ]
+    expected_ids = [f"{batch_document_id_prefix}{i}" for i in range(num_input_documents)]
 
     def _pad_to_n(rows: List[List[RecognizerResult]]) -> List[List[RecognizerResult]]:
         while len(rows) < num_input_documents:
@@ -328,8 +309,7 @@ def convert_langextract_batch_to_presidio_results_aligned(
             return _positional()
         if rid in by_id:
             logger.warning(
-                "Duplicate document_id %r in LangExtract batch output; "
-                "using positional alignment",
+                "Duplicate document_id %r in LangExtract batch output; using positional alignment",
                 rid,
             )
             return _positional()
@@ -389,14 +369,12 @@ def convert_langextract_to_presidio_results(
             if enable_generic_consolidation:
                 entity_type = extraction_class.upper()
                 logger.debug(
-                    "Unknown extraction class '%s' will be consolidated to "
-                    "GENERIC_PII_ENTITY",
+                    "Unknown extraction class '%s' will be consolidated to GENERIC_PII_ENTITY",
                     extraction_class,
                 )
             else:
                 logger.warning(
-                    "Unknown extraction class '%s' not found in entity "
-                    "mappings, skipping",
+                    "Unknown extraction class '%s' not found in entity mappings, skipping",
                     extraction_class,
                 )
                 continue
@@ -418,8 +396,7 @@ def convert_langextract_to_presidio_results(
             original_score=confidence,
             textual_explanation=(
                 f"LangExtract extraction with {extraction.alignment_status} alignment"
-                if hasattr(extraction, "alignment_status")
-                and extraction.alignment_status
+                if hasattr(extraction, "alignment_status") and extraction.alignment_status
                 else "LangExtract extraction"
             ),
         )

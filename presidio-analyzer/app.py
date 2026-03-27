@@ -14,6 +14,7 @@ from presidio_analyzer import (
     AnalyzerRequest,
     BatchAnalyzerEngine,
 )
+from presidio_analyzer.langfuse_trace_context import langfuse_trace_scope
 from werkzeug.exceptions import HTTPException
 
 DEFAULT_PORT = "3000"
@@ -80,30 +81,32 @@ class Server:
                     # Make sure the language is supported by the engine.
                     self.engine.get_supported_entities(req_data.language)
 
-                iterator = self.batch_engine.analyze_iterator(
-                    texts=batch,
-                    batch_size=min(
-                        len(batch),
-                        int(os.environ.get("BATCH_SIZE", DEFAULT_BATCH_SIZE)),
-                    ),
-                    language=req_data.language,
-                    correlation_id=req_data.correlation_id,
-                    score_threshold=req_data.score_threshold,
-                    entities=req_data.entities,
-                    return_decision_process=req_data.return_decision_process,
-                    ad_hoc_recognizers=req_data.ad_hoc_recognizers,
-                    context=req_data.context,
-                    allow_list=req_data.allow_list,
-                    allow_list_match=req_data.allow_list_match,
-                    regex_flags=req_data.regex_flags,
-                    n_process=min(
-                        len(batch), int(os.environ.get("N_PROCESS", DEFAULT_N_PROCESS))
-                    ),
-                )
-                results = []
-                for recognizer_result_list in iterator:
-                    _exclude_attributes_from_dto(recognizer_result_list)
-                    results.append(recognizer_result_list)
+                with langfuse_trace_scope(req_data.langfuse_trace):
+                    iterator = self.batch_engine.analyze_iterator(
+                        texts=batch,
+                        batch_size=min(
+                            len(batch),
+                            int(os.environ.get("BATCH_SIZE", DEFAULT_BATCH_SIZE)),
+                        ),
+                        language=req_data.language,
+                        correlation_id=req_data.correlation_id,
+                        score_threshold=req_data.score_threshold,
+                        entities=req_data.entities,
+                        return_decision_process=req_data.return_decision_process,
+                        ad_hoc_recognizers=req_data.ad_hoc_recognizers,
+                        context=req_data.context,
+                        allow_list=req_data.allow_list,
+                        allow_list_match=req_data.allow_list_match,
+                        regex_flags=req_data.regex_flags,
+                        n_process=min(
+                            len(batch),
+                            int(os.environ.get("N_PROCESS", DEFAULT_N_PROCESS)),
+                        ),
+                    )
+                    results = []
+                    for recognizer_result_list in iterator:
+                        _exclude_attributes_from_dto(recognizer_result_list)
+                        results.append(recognizer_result_list)
 
                 return Response(
                     json.dumps(

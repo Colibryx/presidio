@@ -51,12 +51,30 @@ def _normalize_text_or_documents_for_langextract(
 
 
 # Entity types that benefit from cybersecurity extraction guidance in the prompt
-_CYBERSECURITY_ENTITIES = frozenset({
-    "INCIDENT_ID", "MALWARE", "RANSOMWARE", "THREAT_ACTOR", "THREAT_GROUP",
-    "VULNERABILITY", "CVE", "CWE", "HASH_FILE", "INTERNAL_SERVER", "SOURCE_IP",
-    "DESTINATION_IP", "PORT_NUMBER", "PROTOCOL", "USERNAME", "PASSWORD",
-    "PROCESS_NAME", "COMMAND", "MITRE_TECHNIQUE", "IP_ADDRESS",
-})
+_CYBERSECURITY_ENTITIES = frozenset(
+    {
+        "INCIDENT_ID",
+        "MALWARE",
+        "RANSOMWARE",
+        "THREAT_ACTOR",
+        "THREAT_GROUP",
+        "VULNERABILITY",
+        "CVE",
+        "CWE",
+        "HASH_FILE",
+        "INTERNAL_SERVER",
+        "SOURCE_IP",
+        "DESTINATION_IP",
+        "PORT_NUMBER",
+        "PROTOCOL",
+        "USERNAME",
+        "PASSWORD",
+        "PROCESS_NAME",
+        "COMMAND",
+        "MITRE_TECHNIQUE",
+        "IP_ADDRESS",
+    }
+)
 
 
 class LangExtractRecognizer(LMRecognizer, ABC):
@@ -93,10 +111,7 @@ class LangExtractRecognizer(LMRecognizer, ABC):
         supported_entities = get_supported_entities(lm_config, langextract_config)
 
         if not supported_entities:
-            raise ValueError(
-                "Configuration must contain 'supported_entities' in "
-                "'lm_recognizer' or 'langextract'"
-            )
+            raise ValueError("Configuration must contain 'supported_entities' in 'lm_recognizer' or 'langextract'")
 
         validate_config_fields(
             full_config,
@@ -107,13 +122,11 @@ class LangExtractRecognizer(LMRecognizer, ABC):
                 ("langextract", "entity_mappings"),
                 ("langextract", "prompt_file"),
                 ("langextract", "examples_file"),
-            ]
+            ],
         )
 
         self.config = langextract_config
-        model_config = get_model_config(
-            full_config, provider_key="langextract"
-        )
+        model_config = get_model_config(full_config, provider_key="langextract")
 
         super().__init__(
             supported_entities=supported_entities,
@@ -124,19 +137,13 @@ class LangExtractRecognizer(LMRecognizer, ABC):
             temperature=model_config.get("temperature"),
             min_score=lm_config.get("min_score"),
             labels_to_ignore=lm_config.get("labels_to_ignore"),
-            enable_generic_consolidation=lm_config.get(
-                "enable_generic_consolidation"
-            ),
+            enable_generic_consolidation=lm_config.get("enable_generic_consolidation"),
         )
 
-        examples_data = load_yaml_examples(
-            langextract_config["examples_file"]
-        )
+        examples_data = load_yaml_examples(langextract_config["examples_file"])
         self.examples = convert_to_langextract_format(examples_data)
 
-        self._prompt_template = load_prompt_file(
-            langextract_config["prompt_file"]
-        )
+        self._prompt_template = load_prompt_file(langextract_config["prompt_file"])
 
         self.entity_mappings = langextract_config["entity_mappings"]
         self.debug = langextract_config.get("debug", False)
@@ -149,28 +156,18 @@ class LangExtractRecognizer(LMRecognizer, ABC):
         if extract_params:
             if "extract" in extract_params:
                 for param_name, default_value in extract_params["extract"].items():
-                    self._extract_params[param_name] = self._model_config.get(
-                        param_name, default_value
-                    )
+                    self._extract_params[param_name] = self._model_config.get(param_name, default_value)
 
             if "language_model" in extract_params:
-                for param_name, default_value in (
-                    extract_params["language_model"].items()
-                ):
-                    self._language_model_params[param_name] = (
-                        self._model_config.get(param_name, default_value)
-                    )
+                for param_name, default_value in extract_params["language_model"].items():
+                    self._language_model_params[param_name] = self._model_config.get(param_name, default_value)
 
         # Fallback: if model.provider exists, merge provider.extract_params
         # and provider.language_model_params (nested config structure)
         provider_config = self._model_config.get("provider", {})
         if provider_config:
-            self._extract_params.update(
-                provider_config.get("extract_params", {})
-            )
-            self._language_model_params.update(
-                provider_config.get("language_model_params", {})
-            )
+            self._extract_params.update(provider_config.get("extract_params", {}))
+            self._language_model_params.update(provider_config.get("language_model_params", {}))
 
     def _call_llm(self, text: str, entities: List[str], **kwargs):
         """Call LangExtract LLM."""
@@ -206,7 +203,7 @@ class LangExtractRecognizer(LMRecognizer, ABC):
             entity_mappings=self.entity_mappings,
             supported_entities=self.supported_entities,
             enable_generic_consolidation=self.enable_generic_consolidation,
-            recognizer_name=self.__class__.__name__
+            recognizer_name=self.__class__.__name__,
         )
 
     def _call_llm_batch(self, texts: List[str], entities: List[str], **kwargs):
@@ -248,9 +245,7 @@ class LangExtractRecognizer(LMRecognizer, ABC):
         """Call LangExtract with configured parameters."""
         try:
             extract_params = {
-                "text_or_documents": _normalize_text_or_documents_for_langextract(
-                    kwargs.pop("text")
-                ),
+                "text_or_documents": _normalize_text_or_documents_for_langextract(kwargs.pop("text")),
                 "prompt_description": kwargs.pop("prompt"),
                 "examples": kwargs.pop("examples"),
             }
@@ -263,10 +258,7 @@ class LangExtractRecognizer(LMRecognizer, ABC):
 
             return lx.extract(**extract_params)
         except Exception:
-            logger.exception(
-                "LangExtract extraction failed (model '%s')",
-                self.model_id
-            )
+            logger.exception("LangExtract extraction failed (model '%s')", self.model_id)
             raise
 
     @abstractmethod

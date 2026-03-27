@@ -1,7 +1,8 @@
 import re
-from typing import Dict
+from typing import Any, Dict, Optional
 
 from presidio_analyzer import PatternRecognizer
+from presidio_analyzer.langfuse_trace_context import normalize_langfuse_trace_options
 
 
 class AnalyzerRequest:
@@ -19,6 +20,8 @@ class AnalyzerRequest:
         be logged
         return_decision_process: Should the decision points within the analysis
         returned as part of the response
+        langfuse: Optional tracing attributes for Langfuse (SDK v3+), e.g.
+            ``{"session_id": "...", "user_id": "...", "tags": ["a"]}``
     """
 
     def __init__(self, req_data: Dict):
@@ -31,12 +34,14 @@ class AnalyzerRequest:
         ad_hoc_recognizers = req_data.get("ad_hoc_recognizers")
         self.ad_hoc_recognizers = []
         if ad_hoc_recognizers:
-            self.ad_hoc_recognizers = [
-                PatternRecognizer.from_dict(rec) for rec in ad_hoc_recognizers
-            ]
+            self.ad_hoc_recognizers = [PatternRecognizer.from_dict(rec) for rec in ad_hoc_recognizers]
         self.context = req_data.get("context")
         self.allow_list = req_data.get("allow_list")
         self.allow_list_match = req_data.get("allow_list_match", "exact")
-        self.regex_flags = req_data.get(
-            "regex_flags", re.DOTALL | re.MULTILINE | re.IGNORECASE
-        )
+        self.regex_flags = req_data.get("regex_flags", re.DOTALL | re.MULTILINE | re.IGNORECASE)
+        self.langfuse_trace: Optional[Dict[str, Any]] = None
+        langfuse = req_data.get("langfuse")
+        if langfuse is not None:
+            if not isinstance(langfuse, dict):
+                raise TypeError("langfuse must be an object")
+            self.langfuse_trace = normalize_langfuse_trace_options(langfuse)

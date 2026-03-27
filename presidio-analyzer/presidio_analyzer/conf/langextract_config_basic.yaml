@@ -46,6 +46,7 @@ lm_recognizer:
 langextract:
   prompt_file: "presidio_analyzer/conf/langextract_prompts/isacchain_prompt.j2"
   examples_file: "presidio_analyzer/conf/langextract_prompts/isacchain_examples.yaml"
+  debug: true
 
   model:
     model_id: "qwen/qwen3.5-35b-a3b"

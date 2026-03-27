@@ -85,3 +85,6 @@ diff-cover = "*"
 [tool.coverage.run]
 relative_files = true
 source = ["."]
+
+[tool.ruff]
+line-length = 120

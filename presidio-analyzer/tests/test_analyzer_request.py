@@ -1,4 +1,5 @@
 import regex as re
+import pytest
 from presidio_analyzer import AnalyzerRequest, PatternRecognizer
 
 
@@ -218,6 +219,7 @@ class TestAnalyzerRequest:
         assert request.allow_list is None
         assert request.allow_list_match == "exact"
         assert request.regex_flags == (re.DOTALL | re.MULTILINE | re.IGNORECASE)
+        assert request.langfuse_trace is None
 
     def test_analyzer_request_with_complex_context(self):
         """Test context field with various data types."""
@@ -276,4 +278,31 @@ class TestAnalyzerRequest:
 
             request = AnalyzerRequest(req_data)
             assert request.allow_list_match == match_type
+
+    def test_analyzer_request_langfuse_trace(self):
+        """Optional langfuse block is normalized on AnalyzerRequest."""
+        req_data = {
+            "text": "x",
+            "language": "en",
+            "langfuse": {
+                "session_id": "sess-a",
+                "user_id": "user-b",
+                "tags": ["presidio", "test"],
+                "trace_name": "analyze-api",
+                "metadata": {"tenant": "acme"},
+            },
+        }
+        request = AnalyzerRequest(req_data)
+        assert request.langfuse_trace == {
+            "session_id": "sess-a",
+            "user_id": "user-b",
+            "tags": ["presidio", "test"],
+            "trace_name": "analyze-api",
+            "metadata": {"tenant": "acme"},
+        }
+
+    def test_analyzer_request_langfuse_must_be_object(self):
+        req_data = {"text": "x", "language": "en", "langfuse": "bad"}
+        with pytest.raises(TypeError, match="langfuse must be an object"):
+            AnalyzerRequest(req_data)
 
