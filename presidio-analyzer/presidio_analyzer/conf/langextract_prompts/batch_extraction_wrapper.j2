@@ -1,0 +1,64 @@
+{{ base_prompt }}
+
+============================================================
+BATCH MODE — INPUT/OUTPUT FORMAT
+============================================================
+
+You will receive a JSON object containing **multiple texts** to analyze in a
+single request. You MUST analyze EACH text independently, applying ALL the
+extraction rules above to each one, and return a single JSON object with the
+results for every text.
+
+INPUT FORMAT (what you will receive):
+{
+  "texts": [
+    {"id": 0, "content": "<first text to analyze>"},
+    {"id": 1, "content": "<second text to analyze>"}
+  ]
+}
+
+OUTPUT FORMAT (what you MUST return — strict JSON, no prose):
+{
+  "results": [
+    {
+      "text_id": 0,
+      "extractions": [
+        {"class": "<entity class, lowercase>", "text": "<exact substring from input text 0>"}
+      ]
+    },
+    {
+      "text_id": 1,
+      "extractions": []
+    }
+  ]
+}
+
+BATCH RULES (in addition to all rules above):
+1. **One result per input text.** `results` MUST contain EXACTLY one element
+   per input text, identified by `text_id` matching the input `id`.
+2. **Independence.** Each text is independent. Do NOT carry context, entities,
+   or assumptions from one text to another. Treat every text as a standalone
+   document.
+3. **Exact substring.** Each `text` field MUST be an EXACT substring copy from
+   the corresponding input text — preserve casing, spacing, punctuation, and
+   accents. Do NOT paraphrase, normalize, translate, or merge tokens.
+4. **Empty extractions allowed.** If a text contains no extractable entities,
+   return `"extractions": []` for that `text_id`. Never omit a `text_id`.
+5. **Lowercase class labels.** Use the lowercase form of entity types (e.g.
+   `person`, `email`, `internal_server`).
+6. **No prose.** Return ONLY the JSON object. No explanations, no markdown
+   fences, no leading or trailing text.
+
+EXAMPLES (each example below shows a single-text batch for clarity — apply the
+same format when given multiple texts):
+
+{% for ex in examples %}
+INPUT:
+{"texts": [{"id": 0, "content": {{ ex.text | tojson }}}]}
+
+OUTPUT:
+{"results": [{"text_id": 0, "extractions": [{% for extraction in ex.extractions -%}
+{"class": "{{ extraction.extraction_class }}", "text": {{ extraction.extraction_text | tojson }}}{% if not loop.last %}, {% endif %}
+{%- endfor %}]}]}
+
+{% endfor %}

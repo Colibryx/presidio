@@ -30,7 +30,16 @@ lm_recognizer:
 langextract:
   prompt_file: "presidio-analyzer/presidio_analyzer/conf/langextract_prompts/default_pii_phi_prompt.j2"
   examples_file: "presidio-analyzer/presidio_analyzer/conf/langextract_prompts/default_pii_phi_examples.yaml"
-  
+
+  # Native LLM batching: when enabled, multi-text analyze() calls are
+  # collapsed into a single Azure OpenAI Chat Completions request instead
+  # of one call per document. On any error the recognizer falls back to
+  # the legacy langextract path.
+  batch:
+    enabled: true
+    max_size: 20
+    wrapper_prompt_file: "presidio-analyzer/presidio_analyzer/conf/langextract_prompts/batch_extraction_wrapper.j2"
+
   model:
     model_id: "gpt-4o"
     temperature: null

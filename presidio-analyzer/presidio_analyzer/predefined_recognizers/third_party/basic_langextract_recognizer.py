@@ -108,3 +108,51 @@ class BasicLangExtractRecognizer(LangExtractRecognizer):
         return {
             "config": self.lx_model_config,
         }
+
+    def _get_openai_client_for_batch(self):
+        """Return an OpenAI-compatible client for the batched extractor.
+
+        Reuses ``base_url``/``api_key`` from ``provider.kwargs`` (already
+        resolved against environment variables in ``__init__``). The
+        ``openai`` module is imported through the same indirection as the
+        Azure provider, so when Langfuse is enabled the client created
+        here is automatically traced.
+
+        :return: ``(client, model_id)`` tuple suitable for
+            ``BatchedLLMExtractor``.
+        :raises ImportError: If neither ``openai`` nor the Langfuse-wrapped
+            equivalent is importable.
+        :raises ValueError: If the configured provider is not OpenAI-
+            compatible (e.g. native Ollama).
+        """
+        if self.provider != "openai":
+            raise ValueError(
+                f"BasicLangExtractRecognizer batch mode currently supports "
+                f"only the 'openai' provider (OpenAI-compatible APIs such as "
+                f"vLLM, SGLang, Together, etc.). Configured provider: "
+                f"{self.provider!r}."
+            )
+
+        # Reuse the same module reference the Azure provider uses so that
+        # Langfuse tracing is consistent across both backends.
+        from presidio_analyzer.predefined_recognizers.third_party import (
+            azure_openai_provider,
+        )
+
+        openai_module = azure_openai_provider.openai
+        if openai_module is None:
+            raise ImportError(
+                "openai SDK is not installed. Install it with: "
+                "pip install openai"
+            )
+
+        client_kwargs = {}
+        base_url = self.provider_kwargs.get("base_url")
+        api_key = self.provider_kwargs.get("api_key")
+        if base_url:
+            client_kwargs["base_url"] = base_url
+        if api_key:
+            client_kwargs["api_key"] = api_key
+
+        client = openai_module.OpenAI(**client_kwargs)
+        return client, self.model_id

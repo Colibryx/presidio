@@ -500,3 +500,55 @@ class TestAzureOpenAILangExtractRecognizerParameterConfiguration:
             assert call_kwargs["language_model_params"]["azure_deployment"] == "gpt-4o"
             assert call_kwargs["language_model_params"]["api_key"] == "test-key"
 
+
+class TestAzureOpenAIBatchClientFactory:
+    """Cover the new _get_openai_client_for_batch() implementation."""
+
+    def test_get_openai_client_for_batch_api_key_mode(self, mock_langextract):
+        """API-key path uses the shared create_azure_openai_client helper."""
+        recognizer = AzureOpenAILangExtractRecognizer(
+            model_id="my-deployment",
+            azure_endpoint="https://test.openai.azure.com/",
+            api_key="PLACEHOLDER_KEY",
+        )
+
+        with patch(
+            "presidio_analyzer.predefined_recognizers.third_party."
+            "azure_openai_provider.create_azure_openai_client"
+        ) as mock_factory:
+            fake_client = MagicMock()
+            mock_factory.return_value = fake_client
+            client, model_id = recognizer._get_openai_client_for_batch()
+
+            mock_factory.assert_called_once_with(
+                azure_endpoint="https://test.openai.azure.com/",
+                api_version=recognizer.api_version,
+                api_key="PLACEHOLDER_KEY",
+            )
+            assert client is fake_client
+            assert model_id == "my-deployment"
+
+    def test_get_openai_client_for_batch_managed_identity_mode(self, mock_langextract):
+        """Managed-identity path passes api_key=None to the helper."""
+        recognizer = AzureOpenAILangExtractRecognizer(
+            model_id="my-deployment",
+            azure_endpoint="https://test.openai.azure.com/",
+            # No API key → managed identity flow inside the helper
+        )
+
+        with patch(
+            "presidio_analyzer.predefined_recognizers.third_party."
+            "azure_openai_provider.create_azure_openai_client"
+        ) as mock_factory:
+            fake_client = MagicMock()
+            mock_factory.return_value = fake_client
+            client, model_id = recognizer._get_openai_client_for_batch()
+
+            mock_factory.assert_called_once_with(
+                azure_endpoint="https://test.openai.azure.com/",
+                api_version=recognizer.api_version,
+                api_key=None,
+            )
+            assert client is fake_client
+            assert model_id == "my-deployment"
+

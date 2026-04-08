@@ -165,3 +165,24 @@ class AzureOpenAILangExtractRecognizer(LangExtractRecognizer):
             "model_id": model_id_with_prefix,
             "language_model_params": language_model_params,
         }
+
+    def _get_openai_client_for_batch(self):
+        """Return an Azure OpenAI client for the batched extractor.
+
+        Delegates to the module-level :func:`create_azure_openai_client`
+        helper extracted from the LangExtract provider so the same auth
+        logic (API key vs managed identity) is used in both code paths.
+
+        :return: ``(client, deployment_name)`` tuple where ``deployment_name``
+            is the value passed as ``model`` in the Chat Completions request.
+        """
+        from presidio_analyzer.predefined_recognizers.third_party.azure_openai_provider import (  # noqa: E501
+            create_azure_openai_client,
+        )
+
+        client = create_azure_openai_client(
+            azure_endpoint=self.azure_endpoint,
+            api_version=self.api_version,
+            api_key=self.api_key,
+        )
+        return client, self.model_id

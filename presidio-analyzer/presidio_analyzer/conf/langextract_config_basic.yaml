@@ -48,6 +48,15 @@ langextract:
   examples_file: "presidio_analyzer/conf/langextract_prompts/isacchain_examples.yaml"
   debug: true
 
+  # Native LLM batching: when enabled, multi-text analyze() calls are
+  # collapsed into a single Chat Completions request (one system prompt
+  # for the whole batch) instead of N separate calls through langextract.
+  # On any error the recognizer falls back to the legacy langextract path.
+  batch:
+    enabled: true
+    max_size: 20
+    wrapper_prompt_file: "presidio_analyzer/conf/langextract_prompts/batch_extraction_wrapper.j2"
+
   model:
     model_id: "qwen/qwen3.5-35b-a3b"
     provider:

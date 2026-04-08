@@ -55,6 +55,86 @@ except ImportError:  # pragma: no cover
     get_bearer_token_provider_for_scope = None
 
 
+def create_azure_openai_client(
+    azure_endpoint: str,
+    api_version: str,
+    api_key: Optional[str] = None,
+    azure_ad_token_provider: Optional[any] = None,
+    scope: str = "https://cognitiveservices.azure.com/.default",
+):
+    """Create and configure an AzureOpenAI client with the right authentication.
+
+    Centralizes the auth logic so it can be reused both by the LangExtract
+    custom provider and by the new batched LLM extractor (which calls the
+    Azure OpenAI Chat Completions API directly).
+
+    The returned client is the ``AzureOpenAI`` class from the same ``openai``
+    module reference cached in this file. When Langfuse is installed and
+    configured, that reference is the Langfuse-wrapped ``openai`` module, so
+    every call made through the returned client is automatically traced.
+
+    :param azure_endpoint: Azure OpenAI endpoint URL (required).
+    :param api_version: Azure OpenAI API version (required).
+    :param api_key: Optional API key. If omitted (or if
+        ``azure_ad_token_provider`` is given) the client uses managed
+        identity / a custom token provider.
+    :param azure_ad_token_provider: Optional explicit token provider; takes
+        priority over the default managed-identity flow when ``api_key`` is
+        not given.
+    :param scope: OAuth scope used when falling back to the default bearer
+        token provider.
+    :return: Configured ``AzureOpenAI`` client instance.
+    :raises ValueError: If ``azure_endpoint`` is empty.
+    :raises ImportError: If managed identity is needed but ``azure-identity``
+        is not installed.
+    """
+    if not azure_endpoint:
+        raise ValueError(
+            "Azure OpenAI endpoint is required. Set AZURE_OPENAI_ENDPOINT "
+            "environment variable or pass azure_endpoint parameter."
+        )
+    if openai is None:
+        raise ImportError(
+            "openai SDK is not installed. Install it with: pip install openai"
+        )
+
+    if not api_key or azure_ad_token_provider:
+        if not AZURE_IDENTITY_AVAILABLE and not azure_ad_token_provider:
+            raise ImportError(
+                "azure-identity is required for managed identity "
+                "authentication. Install it with: pip install azure-identity"
+            )
+
+        if azure_ad_token_provider:
+            token_provider = azure_ad_token_provider
+            credential_type = "custom token provider"
+        else:
+            token_provider = get_bearer_token_provider_for_scope(scope)
+            credential_type = (
+                "DefaultAzureCredential (development)"
+                if os.getenv("ENV") == "development"
+                else "ChainedTokenCredential"
+            )
+
+        client = openai.AzureOpenAI(
+            azure_ad_token_provider=token_provider,
+            azure_endpoint=azure_endpoint,
+            api_version=api_version,
+        )
+        logger.debug(
+            "Created Azure OpenAI client with %s", credential_type
+        )
+        return client
+
+    client = openai.AzureOpenAI(
+        api_key=api_key,
+        azure_endpoint=azure_endpoint,
+        api_version=api_version,
+    )
+    logger.debug("Created Azure OpenAI client with API key authentication")
+    return client
+
+
 if LANGEXTRACT_OPENAI_AVAILABLE:
     class AzureOpenAILanguageModel(OpenAILanguageModel):
         """
@@ -129,58 +209,20 @@ if LANGEXTRACT_OPENAI_AVAILABLE:
             """
             Create and configure Azure OpenAI client with appropriate authentication.
 
+            Thin wrapper around :func:`create_azure_openai_client` kept for
+            backward compatibility with the LangExtract provider class.
+
             :param azure_ad_token_provider: Optional custom token provider
             :return: Configured AzureOpenAI client instance
             :raises ValueError: If azure_endpoint is not provided
             :raises ImportError: If azure-identity is needed but not available
             """
-            if not self.azure_endpoint:
-                raise ValueError(
-                    "Azure OpenAI endpoint is required. Set AZURE_OPENAI_ENDPOINT "
-                    "environment variable or pass azure_endpoint parameter."
-                )
-
-            if not self.api_key or azure_ad_token_provider:
-                if not AZURE_IDENTITY_AVAILABLE and not azure_ad_token_provider:
-                    raise ImportError(
-                        "azure-identity is required for managed identity "
-                        "authentication. Install it with: pip install azure-identity"
-                    )
-
-                if azure_ad_token_provider:
-                    token_provider = azure_ad_token_provider
-                    credential_type = "custom token provider"
-                else:
-                    token_provider = get_bearer_token_provider_for_scope(
-                        "https://cognitiveservices.azure.com/.default"
-                    )
-                    credential_type = (
-                        "DefaultAzureCredential (development)"
-                        if os.getenv('ENV') == 'development'
-                        else "ChainedTokenCredential"
-                    )
-
-                client = openai.AzureOpenAI(
-                    azure_ad_token_provider=token_provider,
-                    azure_endpoint=self.azure_endpoint,
-                    api_version=self.api_version
-                )
-
-                logger.debug(
-                    f"Initialized Azure OpenAI provider with {credential_type}"
-                )
-                return client
-            else:
-                client = openai.AzureOpenAI(
-                    api_key=self.api_key,
-                    azure_endpoint=self.azure_endpoint,
-                    api_version=self.api_version
-                )
-
-                logger.debug(
-                    "Initialized Azure OpenAI provider with API key authentication"
-                )
-                return client
+            return create_azure_openai_client(
+                azure_endpoint=self.azure_endpoint,
+                api_version=self.api_version,
+                api_key=self.api_key,
+                azure_ad_token_provider=azure_ad_token_provider,
+            )
 
         def _get_client_model_id(self) -> str:
             """

@@ -17,6 +17,12 @@ from .entity_mapper import (
     skip_unmapped_entities,
     validate_result_positions,
 )
+from .batched_llm_extractor import (
+    BATCH_EXTRACTION_SCHEMA,
+    BatchedExtractionError,
+    BatchedLLMExtractor,
+    make_extraction_document,
+)
 from .examples_loader import convert_to_langextract_format, load_yaml_examples
 from .langextract_helper import (
     LANGEXTRACT_PRESIDIO_BATCH_DOC_ID_PREFIX,
@@ -48,6 +54,10 @@ __all__ = [
     "filter_results_by_score",
     "skip_unmapped_entities",
     "validate_result_positions",
+    "BATCH_EXTRACTION_SCHEMA",
+    "BatchedExtractionError",
+    "BatchedLLMExtractor",
+    "make_extraction_document",
     "convert_to_langextract_format",
     "load_yaml_examples",
     "calculate_extraction_confidence",

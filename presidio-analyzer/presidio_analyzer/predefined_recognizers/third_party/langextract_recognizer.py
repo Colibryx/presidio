@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
 from presidio_analyzer.llm_utils import (
+    BatchedExtractionError,
+    BatchedLLMExtractor,
     check_langextract_available,
     convert_langextract_batch_to_presidio_results_aligned,
     convert_langextract_to_presidio_results,
@@ -10,10 +12,12 @@ from presidio_analyzer.llm_utils import (
     extract_lm_config,
     get_model_config,
     get_supported_entities,
+    load_file_from_conf,
     load_prompt_file,
     load_yaml_examples,
     load_yaml_file,
     lx,
+    make_extraction_document,
     presidio_langextract_batch_document_id,
     render_jinja_template,
     validate_config_fields,
@@ -169,6 +173,21 @@ class LangExtractRecognizer(LMRecognizer, ABC):
             self._extract_params.update(provider_config.get("extract_params", {}))
             self._language_model_params.update(provider_config.get("language_model_params", {}))
 
+        # Native batching configuration. When enabled, _call_llm_batch() uses
+        # BatchedLLMExtractor to issue a single Chat Completions call for N
+        # texts. When disabled (or absent), batch calls fall through to the
+        # legacy LangExtract path (one LLM call per document).
+        batch_config = langextract_config.get("batch", {}) or {}
+        self._batch_enabled = bool(batch_config.get("enabled", False))
+        self._batch_max_size = int(batch_config.get("max_size", 20))
+        self._batch_wrapper_prompt_file = batch_config.get(
+            "wrapper_prompt_file",
+            "presidio_analyzer/conf/langextract_prompts/batch_extraction_wrapper.j2",
+        )
+        # Lazy: built on first batch call so subclass-specific client setup
+        # is fully initialized before we touch it.
+        self._batched_extractor: Optional[BatchedLLMExtractor] = None
+
     def _call_llm(self, text: str, entities: List[str], **kwargs):
         """Call LangExtract LLM."""
         # Render prompt with requested entities only (reduces tokens, improves focus)
@@ -207,7 +226,65 @@ class LangExtractRecognizer(LMRecognizer, ABC):
         )
 
     def _call_llm_batch(self, texts: List[str], entities: List[str], **kwargs):
-        """Call LangExtract once for multiple texts (single prompt, batched documents)."""
+        """Run a single LLM call for multiple texts when batch mode is enabled.
+
+        With ``langextract.batch.enabled: true`` in the config, this dispatches
+        to :class:`BatchedLLMExtractor` to issue ONE Chat Completions request
+        for the entire ``texts`` list and recover per-text offsets via
+        ``Resolver.align()``. On any recoverable error
+        (:class:`BatchedExtractionError`) or unexpected exception we log and
+        fall back to the legacy LangExtract path (one LLM call per document).
+
+        With batch mode disabled, this is a thin pass-through to the legacy
+        path so behavior matches the previous version exactly.
+        """
+        if not self._batch_enabled:
+            return self._call_llm_batch_via_langextract(texts, entities, **kwargs)
+
+        try:
+            extractor = self._get_or_build_batched_extractor()
+            aligned_per_text = extractor.extract_batch(texts, entities)
+        except BatchedExtractionError as e:
+            logger.warning(
+                "Batched LLM extraction failed at stage=%s reason=%s; "
+                "falling back to per-text langextract for %d texts (details=%s)",
+                e.stage,
+                e.reason,
+                len(texts),
+                e.details,
+            )
+            return self._call_llm_batch_via_langextract(texts, entities, **kwargs)
+        except Exception:
+            logger.exception(
+                "Unexpected error in batched extraction; falling back to "
+                "langextract for %d texts",
+                len(texts),
+            )
+            return self._call_llm_batch_via_langextract(texts, entities, **kwargs)
+
+        # Convert each per-text Extraction list into RecognizerResults using
+        # the existing converter (which only reads .extractions from its
+        # input — wrap with a SimpleNamespace for free).
+        return [
+            convert_langextract_to_presidio_results(
+                make_extraction_document(aligned),
+                entity_mappings=self.entity_mappings,
+                supported_entities=self.supported_entities,
+                enable_generic_consolidation=self.enable_generic_consolidation,
+                recognizer_name=self.__class__.__name__,
+            )
+            for aligned in aligned_per_text
+        ]
+
+    def _call_llm_batch_via_langextract(
+        self, texts: List[str], entities: List[str], **kwargs
+    ):
+        """Legacy batch path: one LangExtract call that loops per document.
+
+        This is the previous implementation of ``_call_llm_batch``, kept
+        intact as a fallback for the new native-batching path. It is also
+        used directly when ``langextract.batch.enabled`` is false.
+        """
         show_cybersecurity_guidance = bool(set(entities) & _CYBERSECURITY_ENTITIES)
         prompt_description = render_jinja_template(
             self._prompt_template,
@@ -241,6 +318,68 @@ class LangExtractRecognizer(LMRecognizer, ABC):
         )
         return batch_results
 
+    def _get_or_build_batched_extractor(self) -> BatchedLLMExtractor:
+        """Lazily build and cache the :class:`BatchedLLMExtractor`.
+
+        The wrapper prompt is rendered with the recognizer's full entity
+        list (the same one used by the legacy path); cybersecurity guidance
+        is enabled iff at least one cybersecurity-relevant entity is in the
+        recognizer's supported_entities. The Resolver downstream will only
+        keep alignments for what the model actually emitted, so this
+        defensive choice is safe.
+        """
+        if self._batched_extractor is not None:
+            return self._batched_extractor
+
+        # Render the base prompt with the recognizer's full entity list.
+        # We use supported_entities (not the per-call ``entities``) so the
+        # cached extractor stays valid across calls regardless of which
+        # subset of entities a given AnalyzerEngine call requests.
+        show_cybersecurity_guidance = bool(
+            set(self.supported_entities) & _CYBERSECURITY_ENTITIES
+        )
+        base_prompt_rendered = render_jinja_template(
+            self._prompt_template,
+            supported_entities=self.supported_entities,
+            enable_generic_consolidation=self.enable_generic_consolidation,
+            labels_to_ignore=self.labels_to_ignore,
+            show_cybersecurity_guidance=show_cybersecurity_guidance,
+        )
+
+        wrapper_template_str = load_file_from_conf(self._batch_wrapper_prompt_file)
+
+        client, model_id_for_batch = self._get_openai_client_for_batch()
+
+        # Forward only the LLM-call relevant params (temperature, extra_body,
+        # max_tokens) — extract-time params like max_char_buffer are
+        # langextract-specific and have no analog in raw chat.completions.
+        extra_llm_params: Dict[str, Any] = {}
+        if self.temperature is not None:
+            extra_llm_params["temperature"] = self.temperature
+        for key in ("max_tokens", "max_completion_tokens", "extra_body"):
+            if key in self._language_model_params:
+                extra_llm_params[key] = self._language_model_params[key]
+        # ``max_output_tokens`` is the langextract spelling — translate to
+        # the OpenAI ``max_tokens`` parameter when present.
+        if (
+            "max_tokens" not in extra_llm_params
+            and "max_output_tokens" in self._language_model_params
+        ):
+            extra_llm_params["max_tokens"] = self._language_model_params[
+                "max_output_tokens"
+            ]
+
+        self._batched_extractor = BatchedLLMExtractor(
+            openai_client=client,
+            model_id=model_id_for_batch,
+            base_prompt_rendered=base_prompt_rendered,
+            wrapper_template_str=wrapper_template_str,
+            examples=self.examples,
+            max_batch_size=self._batch_max_size,
+            extra_llm_params=extra_llm_params,
+        )
+        return self._batched_extractor
+
     def _call_langextract(self, **kwargs):
         """Call LangExtract with configured parameters."""
         try:
@@ -266,5 +405,23 @@ class LangExtractRecognizer(LMRecognizer, ABC):
         """Return provider-specific params.
 
         Examples: model_id, model_url, azure_endpoint, etc.
+        """
+        ...
+
+    @abstractmethod
+    def _get_openai_client_for_batch(self) -> tuple:
+        """Return ``(openai_client, model_id_for_chat_completions)``.
+
+        Used by :meth:`_call_llm_batch` (when ``batch.enabled: true``) to
+        issue a raw OpenAI Chat Completions request bypassing LangExtract.
+        Subclasses must return:
+
+        - ``openai_client``: an ``openai.OpenAI`` or ``openai.AzureOpenAI``
+          instance with the right base_url/auth already configured. Should
+          be created via the langfuse-patched openai module so traces are
+          captured automatically when Langfuse is enabled.
+        - ``model_id``: the string passed as ``model`` to
+          ``client.chat.completions.create`` (a deployment name for Azure,
+          a model id like ``"qwen/qwen3.5-35b-a3b"`` for Basic).
         """
         ...

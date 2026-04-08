@@ -12,7 +12,10 @@ def create_test_config(
     temperature=0.0,
     min_score=0.5,
     labels_to_ignore=None,
-    enable_generic_consolidation=True
+    enable_generic_consolidation=True,
+    batch_enabled=False,
+    provider_name="ollama",
+    provider_kwargs=None,
 ):
     """Create test config."""
     if supported_entities is None:
@@ -21,8 +24,10 @@ def create_test_config(
         entity_mappings = {"person": "PERSON", "email": "EMAIL_ADDRESS"}
     if labels_to_ignore is None:
         labels_to_ignore = []
-    
-    return {
+    if provider_kwargs is None:
+        provider_kwargs = {"model_url": model_url}
+
+    config = {
         "lm_recognizer": {
             "supported_entities": supported_entities,
             "labels_to_ignore": labels_to_ignore,
@@ -35,10 +40,8 @@ def create_test_config(
             "model": {
                 "model_id": model_id,
                 "provider": {
-                    "name": "ollama",
-                    "kwargs": {
-                        "model_url": model_url,
-                    },
+                    "name": provider_name,
+                    "kwargs": provider_kwargs,
                     "extract_params": {
                     },
                     "language_model_params": {
@@ -49,6 +52,16 @@ def create_test_config(
             "entity_mappings": entity_mappings,
         }
     }
+    if batch_enabled:
+        config["langextract"]["batch"] = {
+            "enabled": True,
+            "max_size": 20,
+            "wrapper_prompt_file": (
+                "presidio_analyzer/conf/langextract_prompts/"
+                "batch_extraction_wrapper.j2"
+            ),
+        }
+    return config
 
 
 class TestBasicLangExtractRecognizerInitialization:
@@ -573,4 +586,181 @@ class TestBasicLangExtractRecognizerParameterConfiguration:
             assert call_kwargs["config"].model_id == "qwen2.5:1.5b"
             assert call_kwargs["config"].provider == "ollama"
             assert call_kwargs["config"].provider_kwargs["model_url"] == "http://localhost:11434"
+
+
+class TestBasicLangExtractBatchMode:
+    """Cover the new native-batching path on top of LangExtractRecognizer."""
+
+    def _make_batch_enabled_recognizer(self, tmp_path):
+        """Create an OpenAI-provider recognizer with batch mode enabled."""
+        import yaml
+
+        config = create_test_config(
+            supported_entities=["PERSON", "EMAIL_ADDRESS"],
+            entity_mappings={"person": "PERSON", "email": "EMAIL_ADDRESS"},
+            model_id="qwen/qwen3.5-35b-a3b",
+            provider_name="openai",
+            provider_kwargs={
+                "base_url": "http://localhost:8000/v1",
+                "api_key": "test-key",
+            },
+            batch_enabled=True,
+        )
+        config_file = tmp_path / "test_config.yaml"
+        with open(config_file, "w") as f:
+            yaml.dump(config, f)
+
+        with patch(
+            "presidio_analyzer.llm_utils.langextract_helper.lx",
+            return_value=Mock(),
+        ):
+            from presidio_analyzer.predefined_recognizers.third_party.basic_langextract_recognizer import (
+                BasicLangExtractRecognizer,
+            )
+            return BasicLangExtractRecognizer(config_path=str(config_file))
+
+    def _make_batch_disabled_recognizer(self, tmp_path):
+        """Create a recognizer with the legacy ollama provider, no batching."""
+        import yaml
+
+        config = create_test_config(
+            supported_entities=["PERSON"],
+            entity_mappings={"person": "PERSON"},
+            batch_enabled=False,
+        )
+        config_file = tmp_path / "test_config.yaml"
+        with open(config_file, "w") as f:
+            yaml.dump(config, f)
+
+        with patch(
+            "presidio_analyzer.llm_utils.langextract_helper.lx",
+            return_value=Mock(),
+        ):
+            from presidio_analyzer.predefined_recognizers.third_party.basic_langextract_recognizer import (
+                BasicLangExtractRecognizer,
+            )
+            return BasicLangExtractRecognizer(config_path=str(config_file))
+
+    def test_call_llm_batch_uses_batched_extractor_when_enabled(self, tmp_path):
+        """When batch mode is on, _call_llm_batch goes through BatchedLLMExtractor."""
+        recognizer = self._make_batch_enabled_recognizer(tmp_path)
+
+        from langextract.data import CharInterval, Extraction
+
+        fake_extraction = Extraction(
+            extraction_class="person",
+            extraction_text="John Doe",
+        )
+        fake_extraction.char_interval = CharInterval(start_pos=0, end_pos=8)
+        fake_extraction.alignment_status = "MATCH_EXACT"
+
+        fake_extractor = MagicMock()
+        fake_extractor.extract_batch.return_value = [
+            [fake_extraction],
+            [],
+        ]
+        with patch.object(
+            recognizer, "_get_or_build_batched_extractor", return_value=fake_extractor
+        ):
+            results = recognizer._call_llm_batch(
+                texts=["John Doe at office", "no entities here"],
+                entities=["PERSON"],
+            )
+
+        fake_extractor.extract_batch.assert_called_once_with(
+            ["John Doe at office", "no entities here"], ["PERSON"]
+        )
+        assert len(results) == 2
+        assert len(results[0]) == 1
+        assert results[0][0].entity_type == "PERSON"
+        assert results[1] == []
+
+    def test_call_llm_batch_falls_back_on_batched_extraction_error(self, tmp_path):
+        """A BatchedExtractionError must trigger the legacy LangExtract fallback."""
+        from presidio_analyzer.llm_utils import BatchedExtractionError
+
+        recognizer = self._make_batch_enabled_recognizer(tmp_path)
+
+        fake_extractor = MagicMock()
+        fake_extractor.extract_batch.side_effect = BatchedExtractionError(
+            "boom",
+            stage="json_parse",
+            details={"raw_snippet": "garbage"},
+        )
+
+        with patch.object(
+            recognizer, "_get_or_build_batched_extractor", return_value=fake_extractor
+        ), patch.object(
+            recognizer,
+            "_call_llm_batch_via_langextract",
+            return_value=[[], []],
+        ) as mock_legacy:
+            results = recognizer._call_llm_batch(
+                texts=["a", "b"], entities=["PERSON"]
+            )
+
+        mock_legacy.assert_called_once_with(["a", "b"], ["PERSON"])
+        assert results == [[], []]
+
+    def test_call_llm_batch_falls_back_on_unexpected_exception(self, tmp_path):
+        """An unexpected exception inside batch path must also fall back."""
+        recognizer = self._make_batch_enabled_recognizer(tmp_path)
+
+        fake_extractor = MagicMock()
+        fake_extractor.extract_batch.side_effect = RuntimeError("unexpected")
+
+        with patch.object(
+            recognizer, "_get_or_build_batched_extractor", return_value=fake_extractor
+        ), patch.object(
+            recognizer,
+            "_call_llm_batch_via_langextract",
+            return_value=[[]],
+        ) as mock_legacy:
+            results = recognizer._call_llm_batch(texts=["a"], entities=["PERSON"])
+
+        mock_legacy.assert_called_once_with(["a"], ["PERSON"])
+        assert results == [[]]
+
+    def test_call_llm_batch_disabled_uses_legacy_path_directly(self, tmp_path):
+        """When batch.enabled is false, batched extractor is never built."""
+        recognizer = self._make_batch_disabled_recognizer(tmp_path)
+
+        with patch.object(
+            recognizer,
+            "_call_llm_batch_via_langextract",
+            return_value=[[]],
+        ) as mock_legacy, patch.object(
+            recognizer, "_get_or_build_batched_extractor"
+        ) as mock_builder:
+            results = recognizer._call_llm_batch(texts=["x"], entities=["PERSON"])
+
+        mock_legacy.assert_called_once_with(["x"], ["PERSON"])
+        mock_builder.assert_not_called()
+        assert results == [[]]
+
+    def test_get_openai_client_for_batch_constructs_openai_client(self, tmp_path):
+        """The Basic recognizer wires base_url/api_key into openai.OpenAI()."""
+        recognizer = self._make_batch_enabled_recognizer(tmp_path)
+
+        with patch(
+            "presidio_analyzer.predefined_recognizers.third_party."
+            "azure_openai_provider.openai"
+        ) as mock_openai_module:
+            fake_client = MagicMock()
+            mock_openai_module.OpenAI.return_value = fake_client
+
+            client, model_id = recognizer._get_openai_client_for_batch()
+
+            mock_openai_module.OpenAI.assert_called_once_with(
+                base_url="http://localhost:8000/v1",
+                api_key="test-key",
+            )
+            assert client is fake_client
+            assert model_id == "qwen/qwen3.5-35b-a3b"
+
+    def test_get_openai_client_for_batch_rejects_non_openai_provider(self, tmp_path):
+        """Ollama provider must raise: batch mode only supports openai-compatible."""
+        recognizer = self._make_batch_disabled_recognizer(tmp_path)
+        with pytest.raises(ValueError, match="only the 'openai' provider"):
+            recognizer._get_openai_client_for_batch()
 
